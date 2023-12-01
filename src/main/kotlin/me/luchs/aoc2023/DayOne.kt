@@ -1,87 +1,62 @@
 package me.luchs.aoc2023
 
-class DayOne {
+data class DayOne(val input: String) : Day<Int> {
 
-    companion object {
-        fun partOne(input: String): Int {
-            return input.lines()
-                    .map { it.toCharArray() }
-                    .map { it.filter { char -> char.isDigit() } }
-                    .map { it.joinToString(separator = "") }
-                    .sumOf { it.toCalibrationValue() }
-        }
+    override fun partOne(): Int {
+        return input.lines()
+            .map { it.toCharArray() }
+            .map { it.filter { char -> char.isDigit() } }
+            .sumOf { charsToInt(it.first(), it.last()) }
+    }
 
-        fun partTwo(input: String): Int {
-            return input.lines().sumOf { it.toCalibrationValueWithString() }
-        }
+    override fun partTwo(): Int {
+        return input.lines()
+            .map { it.toDigitsWithText() }
+            .sumOf { charsToInt(it.first().value, it.last().value) }
+    }
 
-        private fun String.toCalibrationValue(): Int {
-            if (this.isEmpty()) {
-                throw IllegalArgumentException("Cannot convert empty String to calibration value")
+    private fun String.toDigitsWithText(): List<Digit> {
+        // extract numbers as digits
+        val digits: MutableList<Digit> = this
+            .toCharArray()
+            .mapIndexed { index, c ->
+                filter { c.isDigit() }.map { Digit(c, index) }
             }
+            .flatMap { it.asIterable() }
+            .toMutableList()
 
-            if (1 == this.length) {
-                return (this + this).toInt()
-            }
+        // add first and last text-based digits
+        Number.entries
+            .map { Digit(it.char, this.indexOf(it.string)) }
+            .sortedBy { it.index }
+            .firstOrNull() { it.index >= 0 }
+            ?.let { digits.addFirst(it) }
 
-            if (2 == this.length) {
-                return this.toInt()
-            }
+        Number.entries
+            .map { Digit(it.char, this.lastIndexOf(it.string)) }
+            .sortedBy { it.index }
+            .lastOrNull() { it.index >= 0 }
+            ?.let { digits.addLast(it) }
 
-            return String(charArrayOf(this.first(), this.last())).toInt()
-        }
+        return digits.sortedBy { it.index }
+    }
 
-        private fun String.toCalibrationValueWithString(): Int {
+    private fun charsToInt(vararg char: Char): Int {
+        return String(charArrayOf(*char)).toInt()
+    }
 
-            val digits = mutableListOf<Digit>()
+    private data class Digit(val value: Char, val index: Int)
 
-            val firstDigitIndex = this.toCharArray().indexOfFirst { it.isDigit() }
-            if (firstDigitIndex >= 0) {
-                val firstDigit = this[firstDigitIndex]
-                digits.addFirst(Digit(firstDigit, firstDigitIndex))
-            }
-
-            val lastDigitIndex = this.toCharArray().indexOfLast { it.isDigit() }
-            if (lastDigitIndex >= 0) {
-                val lastDigit = this[lastDigitIndex]
-                digits.addFirst(Digit(lastDigit, lastDigitIndex))
-            }
-
-            listOf(
-                    Digit('1', this.indexOf("one")),
-                    Digit('2', this.indexOf("two")),
-                    Digit('3', this.indexOf("three")),
-                    Digit('4', this.indexOf("four")),
-                    Digit('5', this.indexOf("five")),
-                    Digit('6', this.indexOf("six")),
-                    Digit('7', this.indexOf("seven")),
-                    Digit('8', this.indexOf("eight")),
-                    Digit('9', this.indexOf("nine")))
-                    .sortedBy { it.index }
-                    .firstOrNull() { it.index >= 0 }
-                    ?.let { digits.addFirst(it) }
-
-            listOf(
-                    Digit('1', this.lastIndexOf("one")),
-                    Digit('2', this.lastIndexOf("two")),
-                    Digit('3', this.lastIndexOf("three")),
-                    Digit('4', this.lastIndexOf("four")),
-                    Digit('5', this.lastIndexOf("five")),
-                    Digit('6', this.lastIndexOf("six")),
-                    Digit('7', this.lastIndexOf("seven")),
-                    Digit('8', this.lastIndexOf("eight")),
-                    Digit('9', this.lastIndexOf("nine")))
-                    .sortedBy { it.index }
-                    .lastOrNull() { it.index >= 0 }
-                    ?.let { digits.addLast(it) }
-
-            val first = digits.minByOrNull { it.index }!!.value
-            val last = digits.maxByOrNull { it.index }!!.value
-
-            return String(charArrayOf(first, last)).toInt()
-        }
-
-        private data class Digit(val value: Char, val index: Int)
+    private enum class Number(val char: Char, val string: String) {
+        ONE('1', "one"),
+        TWO('2', "two"),
+        THREE('3', "three"),
+        FOUR('4', "four"),
+        FIVE('5', "five"),
+        SIX('6', "six"),
+        SEVEN('7', "seven"),
+        EIGHT('8', "eight"),
+        NINE('9', "nine")
     }
 
 }

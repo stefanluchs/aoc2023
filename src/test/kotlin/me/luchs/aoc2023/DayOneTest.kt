@@ -13,16 +13,9 @@ a1b2c3d4e5f
 treb7uchet  
         """.trimIndent()
 
-        val result = DayOne.partOne(exampleInput)
+        val result = DayOne(exampleInput).partOne()
 
         Assertions.assertEquals(142, result)
-    }
-
-    @Test
-    fun executePartOne() {
-        val result = DayOne.partOne(DayOneInput.input)
-        print(result)
-        Assertions.assertEquals(54561, result)
     }
 
     @Test
@@ -36,7 +29,7 @@ zoneight234
 7pqrstsixteen
 """.trimIndent()
 
-        val result = DayOne.partTwo(exampleInput)
+        val result = DayOne(exampleInput).partTwo()
 
         Assertions.assertEquals(281, result)
     }
@@ -46,16 +39,9 @@ zoneight234
         val exampleInput = """eighthree
 sevenine
 """.trimIndent()
-        val result = DayOne.partTwo(exampleInput)
+        val result = DayOne(exampleInput).partTwo()
 
         Assertions.assertEquals(83 + 79, result)
-    }
-
-    @Test
-    fun executePartTwo() {
-        val result = DayOne.partTwo(DayOneInput.input)
-        print(result)
-        Assertions.assertEquals(54076, result)
     }
 
 }

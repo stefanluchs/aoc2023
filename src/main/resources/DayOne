@@ -1,10 +1,4 @@
-package me.luchs.aoc2023
-
-class DayOneInput {
-
-    companion object  {
-
-        val input: String = """sixsrvldfour4seven
+sixsrvldfour4seven
 53hvhgchljnlxqjsgrhxgf1zfoureightmlhvvv
 fives2dznl
 twocrqvjsix5threethree
@@ -1003,9 +997,4 @@ eight78
 xnhhlgfrqbgfhhnvllhptfh3
 ljjllzbbffpxcjrztzthreermg6fzqqpd
 72mmjrfjvlzone3threethreesix
-fiveonecfsfsix74twocllbfnptkgttf           
-        """.trimIndent()
-
-    }
-
-}
+fiveonecfsfsix74twocllbfnptkgttf
