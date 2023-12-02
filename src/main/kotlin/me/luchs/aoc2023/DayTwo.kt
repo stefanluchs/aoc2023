@@ -11,7 +11,9 @@ data class DayTwo(val input: String) : Day<Int> {
     }
 
     override fun partTwo(): Int {
-        TODO("Not yet implemented")
+        return input.lines()
+            .map { it.toGame() }
+            .sumOf { it.getPowerOfMinimumSetOfCubes() }
     }
 
     private fun String.toGame(): Game {
@@ -49,6 +51,13 @@ data class DayTwo(val input: String) : Day<Int> {
     private data class Game(val id: Int, val subsets: List<Subset>) {
         fun isPossible(): Boolean {
             return this.subsets.none { it.isImpossible() }
+        }
+
+        fun getPowerOfMinimumSetOfCubes(): Int {
+            val maxRed  = subsets.maxOf { it.red }
+            val maxGreen  = subsets.maxOf { it.green }
+            val maxBlue = subsets.maxOf { it.blue }
+            return maxRed * maxGreen * maxBlue
         }
     }
 

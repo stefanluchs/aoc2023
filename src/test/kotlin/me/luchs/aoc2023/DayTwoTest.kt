@@ -23,5 +23,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 
     @Test
     fun partTwo() {
+        val result = DayTwo(input).partTwo()
+        assertEquals(2286, result)
     }
 }
