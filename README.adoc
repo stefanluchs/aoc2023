@@ -10,7 +10,10 @@ Each day is implemented in one Kotlin data class which implements the `Day` inte
 
 [source,kotlin]
 ----
-include::src/main/kotlin/me/luchs/aoc2023/Day.kt[lines=3..6]
+interface Day<T> {
+    fun partOne(): T
+    fun partTwo(): T
+}
 ----
 
 Each `Day` implementation has the input as parameter to enable simple configuration of the implementation depending on the context.
@@ -28,9 +31,3 @@ The input for each day is stored in a plain text file in the `resources` directo
 In the `Main.kt` the implementation of the day is instantiated with the input from the file.
 
 The solution is printed to the terminal with `Part One/Two` as prefix.
-
-[source,kotlin]
-----
-include::src/main/kotlin/Main.kt[]
-----
-
