@@ -1,10 +1,10 @@
-import me.luchs.aoc2023.DayOne
+import me.luchs.aoc2023.DayTwo
 
 fun main() {
-    val input = readInput("DayOne")
-    val day = DayOne(input.trimIndent())
+    val input = readInput("DayTwo")
+    val day = DayTwo(input.trimIndent())
     println("Part One: " + day.partOne())
-    println("Part Two: " + day.partTwo())
+    //println("Part Two: " + day.partTwo())
 }
 
 fun readInput(day: String): String {
