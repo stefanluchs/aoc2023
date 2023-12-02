@@ -1,0 +1,36 @@
+= Advent of Code 2023
+
+This repository contains my solutions for the https://adventofcode.com/2023[Advent of Code 2023].
+
+These are written in https://kotlinlang.org/[Kotlin] using a test-driven approach.
+
+== Structure
+
+Each day is implemented in one Kotlin data class which implements the `Day` interface to define a consistent structure.
+
+[source,kotlin]
+----
+include::src/main/kotlin/me/luchs/aoc2023/Day.kt[lines=3..6]
+----
+
+Each `Day` implementation has the input as parameter to enable simple configuration of the implementation depending on the context.
+
+== Approach
+
+In the unit test context, the data class for the day is instantiated with the example input for the test case.
+
+Using a test-driven approach, one or multiple unit tests are created for each part of the day.
+
+== Execution
+
+The input for each day is stored in a plain text file in the `resources` directory.
+
+In the `Main.kt` the implementation of the day is instantiated with the input from the file.
+
+The solution is printed to the terminal with `Part One/Two` as prefix.
+
+[source,kotlin]
+----
+include::src/main/kotlin/Main.kt[]
+----
+
