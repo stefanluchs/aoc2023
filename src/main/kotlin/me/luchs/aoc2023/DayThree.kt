@@ -4,6 +4,7 @@ import kotlin.math.abs
 
 data class DayThree(val input: String) : Day<Int> {
     override fun partOne(): Int {
+        // find all symbols
         val symbols = input
             .lines()
             .flatMapIndexed { row, line ->
@@ -15,6 +16,7 @@ data class DayThree(val input: String) : Day<Int> {
 
         return input
             .lines()
+            // find all numbers with adjacent symbol
             .flatMapIndexed { row, line ->
                 Regex("\\d+")
                     .findAll(line)
@@ -23,6 +25,7 @@ data class DayThree(val input: String) : Day<Int> {
                     }
                     .map { it.value }
             }
+            // compute sum of numbers with adjacent symbol
             .sumOf { it.toInt() }
     }
 
@@ -36,7 +39,7 @@ data class DayThree(val input: String) : Day<Int> {
                     .map { Number(it.value.toInt(), it.range, row) }
             }
 
-        val gears = input
+        return input
             .lines()
             // find possible gear locations
             .flatMapIndexed { row, line ->
@@ -60,8 +63,6 @@ data class DayThree(val input: String) : Day<Int> {
                     .map { it.value }
                     .reduce { n1, n2 -> n1 * n2 }
             }
-
-        return gears
     }
 
     private data class Number(val value: Int, val coordinates: List<Coordinate2D>) {
