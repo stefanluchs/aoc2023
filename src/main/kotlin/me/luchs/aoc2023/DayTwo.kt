@@ -82,13 +82,13 @@ data class DayTwo(val input: String) : Day<Int> {
                     .split(',')
                     .map { it.trim() }
                     .map { it.split(' ') }
-                val redCubes = cubes.getNumberOfCubes(CubeColor.RED)
-                val greenCubes = cubes.getNumberOfCubes(CubeColor.GREEN)
-                val blueCubes = cubes.getNumberOfCubes(CubeColor.BLUE)
+                val redCubes = cubes.numberOf(CubeColor.RED)
+                val greenCubes = cubes.numberOf(CubeColor.GREEN)
+                val blueCubes = cubes.numberOf(CubeColor.BLUE)
                 return Subset(redCubes, greenCubes, blueCubes)
             }
 
-            private fun List<List<String>>.getNumberOfCubes(cubeColor: CubeColor): Int {
+            private fun List<List<String>>.numberOf(cubeColor: CubeColor): Int {
                 return this
                     .firstOrNull { it[1].equals(cubeColor.name, ignoreCase = true) }
                     ?.first()
