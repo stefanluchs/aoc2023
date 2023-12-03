@@ -1,8 +1,9 @@
+import me.luchs.aoc2023.DayThree
 import me.luchs.aoc2023.DayTwo
 
 fun main() {
-    val input = readInput("DayTwo")
-    val day = DayTwo(input.trimIndent())
+    val input = readInput("DayThree")
+    val day = DayThree(input.trimIndent())
     println("Part One: " + day.partOne())
     println("Part Two: " + day.partTwo())
 }
