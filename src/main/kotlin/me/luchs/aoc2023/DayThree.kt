@@ -13,7 +13,8 @@ data class DayThree(val input: String) : Day<Int> {
             }
             .map { it.coordinate }
 
-        val numbers = input.lines()
+        return input
+            .lines()
             .flatMapIndexed { row, line ->
                 Regex("\\d+")
                     .findAll(line)
@@ -23,13 +24,50 @@ data class DayThree(val input: String) : Day<Int> {
                     .map { it.value }
             }
             .sumOf { it.toInt() }
-
-        return numbers
-
     }
 
     override fun partTwo(): Int {
-        TODO("Not yet implemented")
+        // get all numbers with respective coordinates
+        val numbers = input
+            .lines()
+            .flatMapIndexed { row, line ->
+                Regex("\\d+")
+                    .findAll(line)
+                    .map { Number(it.value.toInt(), it.range, row) }
+            }
+
+        val gears = input
+            .lines()
+            // find possible gear locations
+            .flatMapIndexed { row, line ->
+                line.toCharArray()
+                    .mapIndexed { column, c -> Symbol(c, column, row) }
+                    .filter { it.char == '*' }
+            }
+            .map { it.coordinate }
+            // verify possible gear has exactly two adjacent numbers
+            .filter { possibleGear ->
+                numbers.filter { number ->
+                    number.coordinates.any { possibleGear.isAdjacentTo(it) }
+                }.size == 2
+            }
+            // calculate the sum of the product of the adjacent numbers of each gear
+            .sumOf { gear ->
+                numbers
+                    .filter { number ->
+                        number.coordinates.any { gear.isAdjacentTo(it) }
+                    }
+                    .map { it.value }
+                    .reduce { n1, n2 -> n1 * n2 }
+            }
+
+        return gears
+    }
+
+    private data class Number(val value: Int, val coordinates: List<Coordinate2D>) {
+        constructor(value: Int, columns: IntRange, row: Int) : this(
+            value,
+            columns.map { Coordinate2D(it, row) })
     }
 
     private data class Symbol(val char: Char, val coordinate: Coordinate2D) {
@@ -37,6 +75,10 @@ data class DayThree(val input: String) : Day<Int> {
     }
 
     private data class Coordinate2D(val column: Int, val row: Int) {
+        fun isAdjacentTo(other: Coordinate2D): Boolean {
+            return isAdjacentTo(other.column, other.row)
+        }
+
         fun isAdjacentTo(column: Int, row: Int): Boolean {
             return this.column == column && this.row == row // identity
                     || this.column == column && abs(this.row - row) == 1 // above or below
