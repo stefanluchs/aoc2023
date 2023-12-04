@@ -23,5 +23,7 @@ class DayFourTest {
 
     @Test
     fun partTwo() {
+        val result = DayFour(input).partTwo()
+        assertEquals(30, result)
     }
 }
