@@ -21,11 +21,11 @@ data class DayFour(val input: String) : Day<Int> {
             val copyIds = it.copyIds()
 
             // get count for current card
-            val numberOfScratchcard = numberOfCards[it.id]!!
+            val numberOfScratchcard = numberOfCards[it.id]!! // entry will always be present!
 
             // add count of the current card to each of the cards to copy
             for (copyId in copyIds) {
-                val copyNumber = numberOfCards[copyId]!!
+                val copyNumber = numberOfCards[copyId]!! // entry will always be present!
                 numberOfCards[copyId] = copyNumber + numberOfScratchcard
             }
         }
