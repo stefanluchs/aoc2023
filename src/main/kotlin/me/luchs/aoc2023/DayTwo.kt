@@ -3,16 +3,11 @@ package me.luchs.aoc2023
 data class DayTwo(val input: String) : Day<Int> {
 
     override fun partOne(): Int {
-        return input.lines()
-            .map { Game.of(it) }
-            .filter { it.isPossible() }
-            .sumOf { it.id }
+        return input.lines().map { Game.of(it) }.filter { it.isPossible() }.sumOf { it.id }
     }
 
     override fun partTwo(): Int {
-        return input.lines()
-            .map { Game.of(it) }
-            .sumOf { it.getPowerOfMinimumSetOfCubes() }
+        return input.lines().map { Game.of(it) }.sumOf { it.getPowerOfMinimumSetOfCubes() }
     }
 
     /**
@@ -24,15 +19,8 @@ data class DayTwo(val input: String) : Day<Int> {
     private data class Game(val id: Int, val subsets: List<Subset>) {
         companion object {
             fun of(input: String): Game {
-                val id = input
-                    .split(':')[0]
-                    .split(' ')[1]
-                    .toInt()
-                val subsets = input
-                    .split(':')[1]
-                    .split(';')
-                    .map { it.trim() }
-                    .map { Subset.of(it) }
+                val id = input.split(':')[0].split(' ')[1].toInt()
+                val subsets = input.split(':')[1].split(';').map { it.trim() }.map { Subset.of(it) }
                 return Game(id, subsets)
             }
         }
@@ -78,10 +66,7 @@ data class DayTwo(val input: String) : Day<Int> {
              * @return the Subset object representing the number of red, green, and blue cubes.
              */
             fun of(input: String): Subset {
-                val cubes = input
-                    .split(',')
-                    .map { it.trim() }
-                    .map { it.split(' ') }
+                val cubes = input.split(',').map { it.trim() }.map { it.split(' ') }
                 val redCubes = cubes.numberOf(CubeColor.RED)
                 val greenCubes = cubes.numberOf(CubeColor.GREEN)
                 val blueCubes = cubes.numberOf(CubeColor.BLUE)
@@ -89,8 +74,7 @@ data class DayTwo(val input: String) : Day<Int> {
             }
 
             private fun List<List<String>>.numberOf(cubeColor: CubeColor): Int {
-                return this
-                    .firstOrNull { it[1].equals(cubeColor.name, ignoreCase = true) }
+                return this.firstOrNull { it[1].equals(cubeColor.name, ignoreCase = true) }
                     ?.first()
                     ?.toInt()
                     ?: 0
@@ -103,9 +87,9 @@ data class DayTwo(val input: String) : Day<Int> {
          * @return true if any number of cubes is above the threshold.
          */
         fun isImpossible(): Boolean {
-            return red > CubeColor.RED.maxNumber
-                    || green > CubeColor.GREEN.maxNumber
-                    || blue > CubeColor.BLUE.maxNumber
+            return red > CubeColor.RED.maxNumber ||
+                green > CubeColor.GREEN.maxNumber ||
+                blue > CubeColor.BLUE.maxNumber
         }
     }
 

@@ -3,27 +3,27 @@ package me.luchs.aoc2023
 data class DayOne(val input: String) : Day<Int> {
 
     override fun partOne(): Int {
-        return input.lines()
+        return input
+            .lines()
             .map { it.toCharArray() }
             .map { it.filter { char -> char.isDigit() } }
             .sumOf { charsToInt(it.first(), it.last()) }
     }
 
     override fun partTwo(): Int {
-        return input.lines()
+        return input
+            .lines()
             .map { it.toDigitsWithText() }
             .sumOf { charsToInt(it.first().value, it.last().value) }
     }
 
     private fun String.toDigitsWithText(): List<Digit> {
         // extract numbers as digits
-        val digits: MutableList<Digit> = this
-            .toCharArray()
-            .mapIndexed { index, c ->
-                filter { c.isDigit() }.map { Digit(c, index) }
-            }
-            .flatMap { it.asIterable() }
-            .toMutableList()
+        val digits: MutableList<Digit> =
+            this.toCharArray()
+                .mapIndexed { index, char -> filter { char.isDigit() }.map { Digit(char, index) } }
+                .flatMap { it.asIterable() }
+                .toMutableList()
 
         // add first and last text-based digits
         Number.entries
@@ -58,5 +58,4 @@ data class DayOne(val input: String) : Day<Int> {
         EIGHT('8', "eight"),
         NINE('9', "nine")
     }
-
 }

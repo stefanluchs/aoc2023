@@ -1,12 +1,12 @@
 package me.luchs.aoc2023
 
-import org.junit.jupiter.api.Assertions.*
-
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class DayThreeTest {
 
-    val input = """
+    val input =
+        """
             467..114..
             ...*......
             ..35..633.

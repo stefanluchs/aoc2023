@@ -20,14 +20,15 @@ treb7uchet
 
     @Test
     fun partTwoExample() {
-        val exampleInput = """two1nine
+        val exampleInput =
+            """two1nine
 eightwothree
 abcone2threexyz
 xtwone3four
 4nineeightseven2
 zoneight234
 7pqrstsixteen
-""".trimIndent()
+            """.trimIndent()
 
         val result = DayOne(exampleInput).partTwo()
 
@@ -38,10 +39,9 @@ zoneight234
     fun partTwoHiddenExample() {
         val exampleInput = """eighthree
 sevenine
-""".trimIndent()
+        """.trimIndent()
         val result = DayOne(exampleInput).partTwo()
 
         Assertions.assertEquals(83 + 79, result)
     }
-
 }
