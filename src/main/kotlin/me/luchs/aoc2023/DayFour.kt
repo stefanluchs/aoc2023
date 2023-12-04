@@ -80,8 +80,11 @@ data class DayFour(val input: String) : Day<Int> {
         /**
          * Returns a list of IDs copied from the current object.
          *
-         * This method retrieves the number of points from the `matches()` method and creates a list of IDs starting from
-         * the current ID plus 1 up to the current ID plus the number of points. If there are no points, an empty list is returned.
+         * This method retrieves the number of matches from the `matches()` method
+         * and creates a list of IDs
+         * starting from the current ID plus 1 up to the current ID
+         * plus the number of points.
+         * If there are no points, an empty list is returned.
          *
          * @return A list of IDs copied from the current object.
          */
