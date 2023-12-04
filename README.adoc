@@ -31,3 +31,7 @@ The input for each day is stored in a plain text file in the `resources` directo
 In the `Main.kt` the implementation of the day is instantiated with the input from the file.
 
 The solution is printed to the terminal with `Part One/Two` as prefix.
+
+== Format
+
+To achieve consistent format of the code, the https://github.com/diffplug/spotless/tree/main/plugin-maven#kotlin[Spotless] Plugin is used with `ktfmt` and `ktlint`.
