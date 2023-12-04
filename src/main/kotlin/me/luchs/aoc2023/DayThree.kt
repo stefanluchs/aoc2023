@@ -5,14 +5,7 @@ import kotlin.math.abs
 data class DayThree(val input: String) : Day<Int> {
     override fun partOne(): Int {
         // find all symbols
-        val symbols = input
-            .lines()
-            .flatMapIndexed { row, line ->
-                line.toCharArray()
-                    .mapIndexed { column, c -> Symbol(c, column, row) }
-                    .filter { it.char != '.' && !it.char.isDigit() }
-            }
-            .map { it.coordinate }
+        val symbols = Symbol.anySymbol(input).map { it.coordinate }
 
         return input
             .lines()
@@ -31,22 +24,9 @@ data class DayThree(val input: String) : Day<Int> {
 
     override fun partTwo(): Int {
         // get all numbers with respective coordinates
-        val numbers = input
-            .lines()
-            .flatMapIndexed { row, line ->
-                Regex("\\d+")
-                    .findAll(line)
-                    .map { Number(it.value.toInt(), it.range, row) }
-            }
+        val numbers = Number.of(input)
 
-        return input
-            .lines()
-            // find possible gear locations
-            .flatMapIndexed { row, line ->
-                line.toCharArray()
-                    .mapIndexed { column, c -> Symbol(c, column, row) }
-                    .filter { it.char == '*' }
-            }
+        return Symbol.gears(input)
             .map { it.coordinate }
             // verify possible gear has exactly two adjacent numbers
             .filter { possibleGear ->
@@ -66,12 +46,47 @@ data class DayThree(val input: String) : Day<Int> {
     }
 
     private data class Number(val value: Int, val coordinates: List<Coordinate2D>) {
+        companion object {
+            fun of(input: String): List<Number> {
+                return input
+                    .lines()
+                    .flatMapIndexed { row, line ->
+                        Regex("\\d+")
+                            .findAll(line)
+                            .map { Number(it.value.toInt(), it.range, row) }
+                    }
+            }
+        }
+
         constructor(value: Int, columns: IntRange, row: Int) : this(
             value,
             columns.map { Coordinate2D(it, row) })
     }
 
     private data class Symbol(val char: Char, val coordinate: Coordinate2D) {
+        companion object {
+            fun gears(input: String): List<Symbol> {
+                return input
+                    .lines()
+                    // find possible gear locations
+                    .flatMapIndexed { row, line ->
+                        line.toCharArray()
+                            .mapIndexed { column, c -> Symbol(c, column, row) }
+                            .filter { it.char == '*' }
+                    }
+            }
+
+            fun anySymbol(input: String): List<Symbol> {
+                return input
+                    .lines()
+                    .flatMapIndexed { row, line ->
+                        line.toCharArray()
+                            .mapIndexed { column, c -> Symbol(c, column, row) }
+                            .filter { it.char != '.' && !it.char.isDigit() }
+                    }
+            }
+        }
+
         constructor(char: Char, column: Int, row: Int) : this(char, Coordinate2D(column, row))
     }
 
