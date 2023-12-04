@@ -34,8 +34,7 @@ data class DayFour(val input: String) : Day<Int> {
         return numberOfCards.map { it.value }.sumOf { it }
     }
 
-    data class Scratchcard(val id: Int, val winningNumbers: List<Int>, val numbers: List<Int>) :
-        Comparable<Scratchcard> {
+    data class Scratchcard(val id: Int, val winningNumbers: List<Int>, val numbers: List<Int>) {
         companion object {
             /**
              * Converts the given input string into a list of Scratchcard objects.
@@ -112,11 +111,6 @@ data class DayFour(val input: String) : Day<Int> {
         private fun matches(): Int {
             return numbers.intersect(winningNumbers.toSet()).size
         }
-
-        override fun compareTo(other: Scratchcard): Int {
-            return this.id.compareTo(other.id)
-        }
-
     }
 
 }
