@@ -26,7 +26,7 @@ Using a test-driven approach, one or multiple unit tests are created for each pa
 
 == Execution
 
-The input for each day is stored in a plain text file in the `resources` directory.
+The input for each day is stored in a plain text file in the `resources > input` directory.
 
 In the `Main.kt` the implementation of the day is instantiated with the input from the file.
 

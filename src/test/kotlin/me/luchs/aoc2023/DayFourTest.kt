@@ -26,4 +26,49 @@ class DayFourTest {
         val result = DayFour(input).partTwo()
         assertEquals(30, result)
     }
+
+    @Test
+    fun parseScratchcards() {
+        // when: Scratchcard are parsed from input
+        val results = DayFour.Scratchcard.ofInput(input)
+
+        // then: number of results is number of lines of input
+        assertEquals(6, results.size)
+
+        // and: id is correct
+        assertEquals(1, results[0].id)
+        assertEquals(2, results[1].id)
+        assertEquals(3, results[2].id)
+
+        // and: winning numbers are correct
+        assertEquals(listOf(41, 48, 83, 86, 17), results[0].winningNumbers)
+
+        // and: values are correct
+        assertEquals(listOf(83, 86, 6, 31, 17, 9, 48, 53), results[0].numbers)
+    }
+
+    @Test
+    fun points() {
+        // given: a Scratchcard
+        val scratchcard = DayFour.Scratchcard.ofInput(input)[0]
+
+        // when: copyIds are calculated
+        val result = scratchcard.points()
+
+        // then: points are calculated correctly
+        assertEquals(8, result)
+    }
+
+    @Test
+    fun scratchcardCopyIds() {
+        // given: a Scratchcard
+        val scratchcard = DayFour.Scratchcard.ofInput(input)[0]
+
+        // when: copyIds are calculated
+        val result = scratchcard.copyIds()
+
+        // then: result contains only matches
+        assertEquals(listOf(2, 3, 4, 5), result)
+    }
+
 }
