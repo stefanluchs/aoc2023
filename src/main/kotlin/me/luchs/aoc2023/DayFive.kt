@@ -2,120 +2,115 @@ package me.luchs.aoc2023
 
 data class DayFive(val input: String) : Day<Long> {
 
+
     override fun partOne(): Long {
-        val almanac = Almanac.ofInput(input)
-        val seeds = seedsFromInput()
-        return seeds.map { almanac.seedToLocation(it) }.minBy { it }
+        val almanac = Almanac(input = input)
+        return almanac.seeds.minOf { seed -> almanac.process(seed) }
     }
 
     override fun partTwo(): Long {
-        TODO("Not yet implemented")
+        val almanac = Almanac(input = input, inverse = true)
+        val seedRanges = almanac.seedRanges()
+
+        // initialize with minimum seed as upper bound for the location result
+        var location = seedRanges.map { it.first }.minOf { it }
+
+        // search for local minima with decreased upper bound every iteration
+        // break if no valid result is found anymore
+        while (true) {
+            location =
+                binarySearch(lowerBound = 0, upperBound = location - 1, inverted = true) { value ->
+                    // Valid if any of the seed ranges contains the value
+                    seedRanges.any { it.contains(almanac.process(value)) }
+                } ?: break
+        }
+        return location
     }
 
-    fun seedsFromInput(): LongArray {
-        return input
-            .lines()[0]
-            .split(':')[1]
-            .split(Regex(" +"))
-            .filter { it.isNotBlank() }
-            .map { it.toLong() }
-            .toTypedArray()
-            .toLongArray()
-    }
-
-    data class Almanac(val foodMaps: List<FoodMap>) {
+    data class Almanac(val seeds: List<Long>, val mappings: List<MappingGroup>) {
         companion object {
-            fun ofInput(input: String): Almanac {
-                val inputLines = input.lines()
-                val mappingInput = inputLines.subList(2, inputLines.size)
+            operator fun invoke(input: String, inverse: Boolean = false): Almanac {
 
-                val mappings = listOf(
-                    FoodMap.ofMapsInput(Food.SEED, Food.SOIL, mappingInput),
-                    FoodMap.ofMapsInput(Food.SOIL, Food.FERTILIZER, mappingInput),
-                    FoodMap.ofMapsInput(Food.FERTILIZER, Food.WATER, mappingInput),
-                    FoodMap.ofMapsInput(Food.WATER, Food.LIGHT, mappingInput),
-                    FoodMap.ofMapsInput(Food.LIGHT, Food.TEMPERATURE, mappingInput),
-                    FoodMap.ofMapsInput(Food.TEMPERATURE, Food.HUMIDITY, mappingInput),
-                    FoodMap.ofMapsInput(Food.HUMIDITY, Food.LOCATION, mappingInput)
-                ).flatten()
+                val sections = input.split("\n\n")
+                val seeds = mutableListOf<Long>()
+                val mappings = mutableListOf<MappingGroup>()
 
-                return Almanac(mappings)
+                sections.forEach { processSection(it, seeds, inverse, mappings) }
+
+                return Almanac(
+                    seeds,
+                    if (inverse) mappings.reversed() else mappings
+                )
             }
-        }
 
-        fun seedToLocation(seed: Long): Long {
-            val soil = mapSourceToDestination(Food.SEED, Food.SOIL, seed)
-            val fertilizer = mapSourceToDestination(Food.SOIL, Food.FERTILIZER, soil)
-            val water = mapSourceToDestination(Food.FERTILIZER, Food.WATER, fertilizer)
-            val light = mapSourceToDestination(Food.WATER, Food.LIGHT, water)
-            val temperature = mapSourceToDestination(Food.LIGHT, Food.TEMPERATURE, light)
-            val humidity = mapSourceToDestination(Food.TEMPERATURE, Food.HUMIDITY, temperature)
-            return mapSourceToDestination(Food.HUMIDITY, Food.LOCATION, humidity)
-        }
-
-        private fun mapSourceToDestination(source: Food, destination: Food, number: Long): Long {
-            val map = foodMaps
-                .filter { it.source == source }
-                .find { it.isInSourceRange(number) }
-            return map?.destinationValue(number) ?: number
-        }
-
-    }
-
-    data class FoodMap(
-        val source: Food, val sourceRangeStart: Long,
-        val destination: Food, val destinationRangeStart: Long,
-        val range: Long
-    ) {
-        companion object {
-            fun ofMapsInput(source: Food, target: Food, mapsInput: List<String>): List<FoodMap> {
-                val foodMapStartIndex = mapsInput
-                    .indexOfFirst { it.startsWith(source.name, ignoreCase = true) }
-
-                var foodMapEndIndex = mapsInput
-                    .subList(foodMapStartIndex, mapsInput.size)
-                    .indexOfFirst { it.isBlank() }
-
-                if (foodMapEndIndex < 0) {
-                    foodMapEndIndex = mapsInput.size
+            private fun processSection(
+                section: String,
+                seeds: MutableList<Long>,
+                inverse: Boolean,
+                mappings: MutableList<MappingGroup>
+            ) {
+                val lines = section.split("\n")
+                val header = lines[0]
+                if (header.startsWith("seeds:")) {
+                    seeds += header.split(": ")[1].split(" ").map { it.toLong() }
                 } else {
-                    foodMapEndIndex += foodMapStartIndex
-                }
 
-                val entries =
-                    mapsInput.subList(
-                        foodMapStartIndex + 1,
-                        foodMapEndIndex
+                    val (sourceCategory, targetCategory) = header
+                        .split(" ")[0]
+                        .split("-to-")
+
+                    val groupMappings = mutableListOf<Mapping>()
+
+                    for (i in 1 until lines.size) {
+                        val line = lines[i]
+                        if (line.isEmpty()) continue
+                        val (dest, source, size) = line.split(" ").map { it.toLong() }
+                        groupMappings += Mapping(
+                            source = if (inverse) dest else source,
+                            destination = if (inverse) source else dest,
+                            range = size,
+                        )
+                    }
+
+                    mappings += MappingGroup(
+                        sourceCategory = if (inverse) targetCategory else sourceCategory,
+                        destinationCategory = if (inverse) sourceCategory else targetCategory,
+                        mappings = groupMappings
                     )
-
-                return entries.map {
-                    val values = it.split(' ')
-                    val destinationRangeStart = values[0].toLong()
-                    val sourceRangeStart = values[1].toLong()
-                    val range = values[2].toLong()
-                    FoodMap(source, sourceRangeStart, target, destinationRangeStart, range)
                 }
             }
         }
 
-        fun destinationValue(number: Long): Long {
-            return number - sourceRangeStart + destinationRangeStart
+        fun seedRanges(): List<LongRange> {
+            return seeds
+                .chunked(2)
+                .map { (start, len) -> LongRange(start, start + len - 1) }
         }
 
-        fun isInSourceRange(number: Long): Boolean {
-            return LongRange(sourceRangeStart, sourceRangeStart + range - 1).contains(number)
+        fun process(value: Long): Long {
+            var result = value
+            for (mapping in mappings) {
+                result = mapping.mappedValue(result)
+            }
+            return result
+        }
+
+    }
+
+    data class MappingGroup(
+        val sourceCategory: String,
+        val destinationCategory: String,
+        val mappings: List<Mapping>
+    ) {
+        fun mappedValue(value: Long): Long {
+            return mappings.firstNotNullOfOrNull { it.mappedValue(value) } ?: value
         }
     }
 
-    enum class Food {
-        SEED,
-        SOIL,
-        FERTILIZER,
-        WATER,
-        LIGHT,
-        TEMPERATURE,
-        HUMIDITY,
-        LOCATION
+    data class Mapping(val source: Long, val destination: Long, val range: Long) {
+        fun mappedValue(value: Long): Long? {
+            return if (value in source until source + range) destination + (value - source) else null
+        }
     }
 
 }

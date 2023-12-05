@@ -54,75 +54,8 @@ class DayFiveTest {
 
     @Test
     fun partTwo() {
-    }
-
-    @Test
-    fun seedsFromInput() {
-        val result = DayFive(input).seedsFromInput()
-        assertTrue(listOf(79L, 14L, 55, 13).toLongArray().contentEquals(result))
-    }
-
-    @Test
-    fun almanacOfInput() {
-        val result = DayFive.Almanac.ofInput(input)
-        assertEquals(18, result.foodMaps.size)
-    }
-
-    @Test
-    fun foodMapsOfInput() {
-        // given: relevant lines of the input
-        val inputLine = input.lines()
-        val mapsInput = inputLine.subList(2, inputLine.size)
-
-        // when: mappings are created
-        val results = DayFive.FoodMap.ofMapsInput(DayFive.Food.SEED, DayFive.Food.SOIL, mapsInput)
-
-        // then: number of entries equals rows for food
-        assertEquals(2, results.size)
-    }
-
-    @ParameterizedTest
-    @ValueSource(longs = [98, 99])
-    fun isInSourceRangeTrue(seed: Long) {
-        // given: foodMap
-        val inputLine = input.lines()
-        val mapsInput = inputLine.subList(2, inputLine.size)
-        val foodMap =
-            DayFive.FoodMap.ofMapsInput(DayFive.Food.SEED, DayFive.Food.SOIL, mapsInput)[0]
-
-        // expect: seed to be in source range
-        assertTrue(foodMap.isInSourceRange(seed))
-    }
-
-    @ParameterizedTest
-    @ValueSource(longs = [97, 100])
-    fun isInSourceRangeFalse(seed: Long) {
-        // given: foodMap
-        val inputLine = input.lines()
-        val mapsInput = inputLine.subList(2, inputLine.size)
-        val foodMap =
-            DayFive.FoodMap.ofMapsInput(DayFive.Food.SEED, DayFive.Food.SOIL, mapsInput)[0]
-
-        // expect: seed to be in source range
-        assertFalse(foodMap.isInSourceRange(seed))
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "79, 82",
-        "14, 43",
-        "55, 86",
-        "13, 35",
-    )
-    fun seedToLocation(seed: Long, location: Long) {
-        // given: almanac
-        val almanac = DayFive.Almanac.ofInput(input)
-
-        // when: seed to location mapping is called
-        val result = almanac.seedToLocation(seed)
-
-        // then: location
-        assertEquals(location, result)
+        val result = DayFive(input).partTwo()
+        assertEquals(46, result)
     }
 
 }
