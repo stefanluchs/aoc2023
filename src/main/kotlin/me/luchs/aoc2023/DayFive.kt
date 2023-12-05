@@ -2,12 +2,22 @@ package me.luchs.aoc2023
 
 data class DayFive(val input: String) : Day<Long> {
 
-
+    /**
+     * Returns the minimum value calculated by processing the seeds in the Almanac.
+     *
+     * @return the minimum calculated value
+     */
     override fun partOne(): Long {
         val almanac = Almanac(input = input)
         return almanac.seeds.minOf { seed -> almanac.process(seed) }
     }
 
+    /**
+     * Finds the location using the given input and Almanac. This method performs a binary search
+     * to find the location with a local minimum value.
+     *
+     * @return The found location as a Long value.
+     */
     override fun partTwo(): Long {
         val almanac = Almanac(input = input, inverse = true)
         val seedRanges = almanac.seedRanges()
@@ -29,6 +39,7 @@ data class DayFive(val input: String) : Day<Long> {
 
     data class Almanac(val seeds: List<Long>, val mappings: List<MappingGroup>) {
         companion object {
+
             operator fun invoke(input: String, inverse: Boolean = false): Almanac {
 
                 val sections = input.split("\n\n")
@@ -42,6 +53,7 @@ data class DayFive(val input: String) : Day<Long> {
                     if (inverse) mappings.reversed() else mappings
                 )
             }
+
 
             private fun processSection(
                 section: String,
@@ -59,18 +71,17 @@ data class DayFive(val input: String) : Day<Long> {
                         .split(" ")[0]
                         .split("-to-")
 
-                    val groupMappings = mutableListOf<Mapping>()
 
-                    for (i in 1 until lines.size) {
-                        val line = lines[i]
-                        if (line.isEmpty()) continue
-                        val (dest, source, size) = line.split(" ").map { it.toLong() }
-                        groupMappings += Mapping(
-                            source = if (inverse) dest else source,
-                            destination = if (inverse) source else dest,
-                            range = size,
-                        )
-                    }
+                    val groupMappings = lines.drop(1)
+                        .filter { it.isNotBlank() }
+                        .map {
+                            val (destination, source, size) = it.split(" ").map { it.toLong() }
+                            Mapping(
+                                source = if (inverse) destination else source,
+                                destination = if (inverse) source else destination,
+                                range = size,
+                            )
+                        }
 
                     mappings += MappingGroup(
                         sourceCategory = if (inverse) targetCategory else sourceCategory,
@@ -81,12 +92,23 @@ data class DayFive(val input: String) : Day<Long> {
             }
         }
 
+        /**
+         * Generates a list of LongRange objects from the seeds.
+         *
+         * @return A list of LongRange objects based on the seeds.
+         */
         fun seedRanges(): List<LongRange> {
             return seeds
                 .chunked(2)
                 .map { (start, len) -> LongRange(start, start + len - 1) }
         }
 
+        /**
+         * Processes the given value by applying a series of mappings.
+         *
+         * @param value the value to process
+         * @return the processed value
+         */
         fun process(value: Long): Long {
             var result = value
             for (mapping in mappings) {
@@ -97,17 +119,45 @@ data class DayFive(val input: String) : Day<Long> {
 
     }
 
+    /**
+     * Represents a group of mappings between source and destination categories.
+     *
+     * @property sourceCategory The source category for this mapping group.
+     * @property destinationCategory The destination category for this mapping group.
+     * @property mappings The list of mappings within this group.
+     */
     data class MappingGroup(
         val sourceCategory: String,
         val destinationCategory: String,
         val mappings: List<Mapping>
     ) {
+
+        /**
+         * Returns the mapped value for the given value based on the mappings.
+         *
+         * @param value The value to be mapped.
+         * @return The mapped value. If there is no mapping found, returns the original value itself.
+         */
         fun mappedValue(value: Long): Long {
             return mappings.firstNotNullOfOrNull { it.mappedValue(value) } ?: value
         }
     }
 
+    /**
+     * Represents a mapping between a source range of values to a destination range of values.
+     *
+     * @property source The starting value of the source range.
+     * @property destination The starting value of the destination range.
+     * @property range The length of the range.
+     */
     data class Mapping(val source: Long, val destination: Long, val range: Long) {
+
+        /**
+         * Maps the given value from the source range to the destination range.
+         *
+         * @param value the value to be mapped
+         * @return the mapped value or null if the given value is outside the source range
+         */
         fun mappedValue(value: Long): Long? {
             return if (value in source until source + range) destination + (value - source) else null
         }
