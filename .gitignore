@@ -19,3 +19,4 @@ buildNumber.properties
 # IntelliJ IDEA
 .idea
 
+src/main/resources/input
