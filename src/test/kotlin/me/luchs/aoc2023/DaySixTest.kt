@@ -25,8 +25,8 @@ class DaySixTest {
         "15,40,8",
         "30,200,9"
     )
-    fun solveTest(time: Int, distance: Int, expected: Int) {
-        val result = DaySix.Race(time, distance).solvePartOne()
+    fun solveTest(time: Long, distance: Long, expected: Long) {
+        val result = DaySix.Race(time, distance).numberOfWaysToBeatDistance()
         assertEquals(expected, result)
     }
 
@@ -46,7 +46,16 @@ class DaySixTest {
     }
 
     @Test
+    fun parseAggregatedRace() {
+        val result = DaySix.Race.ofAggregatedInput(input)
+        assertEquals(71530, result.time)
+        assertEquals(940200, result.distance)
+    }
+
+    @Test
     fun partTwo() {
+        val result = DaySix(input).partTwo()
+        assertEquals(71503, result)
     }
 
 }

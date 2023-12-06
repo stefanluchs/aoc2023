@@ -3,21 +3,17 @@ package me.luchs.aoc2023
 import kotlin.math.*
 
 
-data class DaySix(val input: String) : Day<Int> {
+data class DaySix(val input: String) : Day<Long> {
 
-    override fun partOne(): Int {
-        val races: List<Race> = Race(input)
-        return races
-            .map { it.solvePartOne() }
-            .reduce { acc, i -> acc * i }
+    override fun partOne(): Long {
+        return Race(input).map { it.numberOfWaysToBeatDistance() }.reduce { acc, i -> acc * i }
     }
 
-
-    override fun partTwo(): Int {
-        TODO("Not yet implemented")
+    override fun partTwo(): Long {
+        return Race.ofAggregatedInput(input).numberOfWaysToBeatDistance()
     }
 
-    data class Race(val time: Int, val distance: Int) {
+    data class Race(val time: Long, val distance: Long) {
         companion object {
             operator fun invoke(input: String): List<Race> {
 
@@ -25,32 +21,48 @@ data class DaySix(val input: String) : Day<Int> {
                     .split(':')[1]
                     .trim()
                     .split(Regex(" +"))
-                    .map { it.toInt() }
+                    .map { it.toLong() }
 
                 val distances = input.lines()[1]
                     .split(':')[1]
                     .trim()
                     .split(Regex(" +"))
-                    .map { it.toInt() }
+                    .map { it.toLong() }
 
                 return times.zip(distances).map { Race(it.first, it.second) }
+            }
+
+            fun ofAggregatedInput(input: String): Race {
+
+                val time = input.lines()[0]
+                    .split(':')[1]
+                    .trim()
+                    .replace(" ", "")
+                    .toLong()
+
+                val distance = input.lines()[1]
+                    .split(':')[1]
+                    .trim()
+                    .replace(" ", "")
+                    .toLong()
+
+                return Race(time, distance)
             }
         }
 
         /**
          * Calculates the solution for part one of a problem.
          *
-         * This method uses a mathematical formula to solve for the value of x,
+         * This method uses the formula to solve quadratic formulas to solve for the value of x,
          * which represents time.
          *
          * The formula used is:
-         * x = (time +- sqrt(time^2 - 4 * (distance + 1)))
+         * x = (time +- sqrt(time^2 - 4 * (distance + 1))) / 2
          * */
-        fun solvePartOne(): Int {
-            //x = time/2 +- /(time² - 4 * distance) // 2
+        fun numberOfWaysToBeatDistance(): Long {
             val x1 = (time + sqrt(time.toDouble().pow(2) - 4 * (distance + 1))) / 2
             val x2 = (time - sqrt(time.toDouble().pow(2) - 4 * (distance + 1))) / 2
-            return (floor(x1) - ceil(x2)).toInt() + 1
+            return (floor(x1) - ceil(x2)).toLong() + 1
         }
     }
 
