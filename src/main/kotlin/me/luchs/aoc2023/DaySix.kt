@@ -16,37 +16,27 @@ data class DaySix(val input: String) : Day<Long> {
     data class Race(val time: Long, val distance: Long) {
         companion object {
             operator fun invoke(input: String): List<Race> {
-
-                val times = input.lines()[0]
-                    .split(':')[1]
-                    .trim()
-                    .split(Regex(" +"))
-                    .map { it.toLong() }
-
-                val distances = input.lines()[1]
-                    .split(':')[1]
-                    .trim()
-                    .split(Regex(" +"))
-                    .map { it.toLong() }
-
+                val (times, distances) = input.lines().map { it.parseValues() }
                 return times.zip(distances).map { Race(it.first, it.second) }
             }
 
             fun ofAggregatedInput(input: String): Race {
-
-                val time = input.lines()[0]
-                    .split(':')[1]
-                    .trim()
-                    .replace(" ", "")
-                    .toLong()
-
-                val distance = input.lines()[1]
-                    .split(':')[1]
-                    .trim()
-                    .replace(" ", "")
-                    .toLong()
-
+                val (time, distance) = input.lines().map { it.parseAggregatedValue() }
                 return Race(time, distance)
+            }
+
+            private fun String.parseValues(): List<Long> {
+                return this.split(':')[1]
+                    .trim()
+                    .split(Regex(" +"))
+                    .map { it.toLong() }
+            }
+
+            private fun String.parseAggregatedValue(): Long {
+                return this.split(':')[1]
+                    .trim()
+                    .replace(" ", "")
+                    .toLong()
             }
         }
 
