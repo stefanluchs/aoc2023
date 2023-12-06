@@ -53,16 +53,31 @@ data class DayFour(val input: String) : Day<Int> {
              * @return the constructed Scratchcard object
              */
             private fun ofLine(line: String): Scratchcard {
-                val id = line.split(':')[0].split(" ").filter { it.isNotBlank() }[1].toInt()
+                val (idInput, numbersInput) = line.split(": ")
+                val id = idInput.parseId()
+                val (winning, numbers) = numbersInput.split(" | ").map { it.parseNumbers() }
+                return Scratchcard(id, winning, numbers)
+            }
 
-                val numberArrays = line.split(':')[1].split('|')
+            /**
+             * Parses the ID from the given string.
+             *
+             * @return The parsed ID as an integer.
+             */
+            private fun String.parseId(): Int {
+                return this.split(" ").filter { it.isNotBlank() }[1].toInt()
+            }
 
-                val winningNumbers =
-                    numberArrays[0].split(' ').filter { it.isNotBlank() }.map { it.toInt() }
-
-                val numbers = numberArrays[1].split(' ').filter { it.isNotBlank() }.map { it.toInt() }
-
-                return Scratchcard(id, winningNumbers, numbers)
+            /**
+             * Parses a string and returns a list of integers.
+             *
+             * The string is split by space character (' '), then any empty or blank strings are filtered out.
+             * Finally, each non-empty string is converted to an integer using the `toInt()` function.
+             *
+             * @return A list of integers parsed from the string.
+             */
+            private fun String.parseNumbers(): List<Int> {
+                return this.split(' ').filter { it.isNotBlank() }.map { it.toInt() }
             }
         }
 
