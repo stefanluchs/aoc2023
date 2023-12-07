@@ -1,7 +1,9 @@
 package me.luchs.aoc2023
 
-import kotlin.math.*
-
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 data class DaySix(val input: String) : Day<Long> {
 
@@ -26,34 +28,26 @@ data class DaySix(val input: String) : Day<Long> {
             }
 
             private fun String.parseValues(): List<Long> {
-                return this.split(':')[1]
-                    .trim()
-                    .split(Regex(" +"))
-                    .map { it.toLong() }
+                return this.split(':')[1].trim().split(Regex(" +")).map { it.toLong() }
             }
 
             private fun String.parseAggregatedValue(): Long {
-                return this.split(':')[1]
-                    .trim()
-                    .replace(" ", "")
-                    .toLong()
+                return this.split(':')[1].trim().replace(" ", "").toLong()
             }
         }
 
         /**
          * Calculates the solution for part one of a problem.
          *
-         * This method uses the formula to solve quadratic formulas to solve for the value of x,
-         * which represents time.
+         * This method uses the formula to solve quadratic formulas to solve for the value of x, which
+         * represents time.
          *
-         * The formula used is:
-         * x = (time +- sqrt(time^2 - 4 * (distance + 1))) / 2
-         * */
+         * The formula used is: x = (time +- sqrt(time^2 - 4 * (distance + 1))) / 2
+         */
         fun numberOfWaysToBeatDistance(): Long {
             val x1 = (time + sqrt(time.toDouble().pow(2) - 4 * (distance + 1))) / 2
             val x2 = (time - sqrt(time.toDouble().pow(2) - 4 * (distance + 1))) / 2
             return (floor(x1) - ceil(x2)).toLong() + 1
         }
     }
-
 }

@@ -1,6 +1,5 @@
 package me.luchs.aoc2023
 
-
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -8,10 +7,11 @@ import org.junit.jupiter.params.provider.CsvSource
 
 class DaySixTest {
 
-    private val input = """
+    private val input =
+        """
         Time:      7  15   30
         Distance:  9  40  200
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun partOne() {
@@ -20,11 +20,7 @@ class DaySixTest {
     }
 
     @ParameterizedTest(name = "solve for time: {0} with distance: {1} with expected result: {2}")
-    @CsvSource(
-        "7,9,4",
-        "15,40,8",
-        "30,200,9"
-    )
+    @CsvSource("7,9,4", "15,40,8", "30,200,9")
     fun solveTest(time: Long, distance: Long, expected: Long) {
         val result = DaySix.Race(time, distance).numberOfWaysToBeatDistance()
         assertEquals(expected, result)
@@ -57,5 +53,4 @@ class DaySixTest {
         val result = DaySix(input).partTwo()
         assertEquals(71503, result)
     }
-
 }

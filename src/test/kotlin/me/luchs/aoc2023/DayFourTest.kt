@@ -70,5 +70,4 @@ class DayFourTest {
         // then: result contains only matches
         assertEquals(listOf(2, 3, 4, 5), result)
     }
-
 }

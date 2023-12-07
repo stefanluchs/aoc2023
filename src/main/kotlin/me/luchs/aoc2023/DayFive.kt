@@ -13,8 +13,8 @@ data class DayFive(val input: String) : Day<Long> {
     }
 
     /**
-     * Finds the location using the given input and Almanac. This method performs a binary search
-     * to find the location with a local minimum value.
+     * Finds the location using the given input and Almanac. This method performs a binary search to
+     * find the location with a local minimum value.
      *
      * @return The found location as a Long value.
      */
@@ -32,7 +32,8 @@ data class DayFive(val input: String) : Day<Long> {
                 binarySearch(lowerBound = 0, upperBound = location - 1, inverted = true) { value ->
                     // Valid if any of the seed ranges contains the value
                     seedRanges.any { it.contains(almanac.process(value)) }
-                } ?: break
+                }
+                    ?: break
         }
         return location
     }
@@ -41,19 +42,14 @@ data class DayFive(val input: String) : Day<Long> {
         companion object {
 
             operator fun invoke(input: String, inverse: Boolean = false): Almanac {
-
                 val sections = input.split("\n\n")
                 val seeds = mutableListOf<Long>()
                 val mappings = mutableListOf<MappingGroup>()
 
                 sections.forEach { processSection(it, seeds, inverse, mappings) }
 
-                return Almanac(
-                    seeds,
-                    if (inverse) mappings.reversed() else mappings
-                )
+                return Almanac(seeds, if (inverse) mappings.reversed() else mappings)
             }
-
 
             private fun processSection(
                 section: String,
@@ -66,28 +62,27 @@ data class DayFive(val input: String) : Day<Long> {
                 if (header.startsWith("seeds:")) {
                     seeds += header.split(": ")[1].split(" ").map { it.toLong() }
                 } else {
+                    val (sourceCategory, targetCategory) = header.split(" ")[0].split("-to-")
 
-                    val (sourceCategory, targetCategory) = header
-                        .split(" ")[0]
-                        .split("-to-")
+                    val groupMappings =
+                        lines
+                            .drop(1)
+                            .filter { it.isNotBlank() }
+                            .map {
+                                val (destination, source, size) = it.split(" ").map { it.toLong() }
+                                Mapping(
+                                    source = if (inverse) destination else source,
+                                    destination = if (inverse) source else destination,
+                                    range = size
+                                )
+                            }
 
-
-                    val groupMappings = lines.drop(1)
-                        .filter { it.isNotBlank() }
-                        .map {
-                            val (destination, source, size) = it.split(" ").map { it.toLong() }
-                            Mapping(
-                                source = if (inverse) destination else source,
-                                destination = if (inverse) source else destination,
-                                range = size,
-                            )
-                        }
-
-                    mappings += MappingGroup(
-                        sourceCategory = if (inverse) targetCategory else sourceCategory,
-                        destinationCategory = if (inverse) sourceCategory else targetCategory,
-                        mappings = groupMappings
-                    )
+                    mappings +=
+                        MappingGroup(
+                            sourceCategory = if (inverse) targetCategory else sourceCategory,
+                            destinationCategory = if (inverse) sourceCategory else targetCategory,
+                            mappings = groupMappings
+                        )
                 }
             }
         }
@@ -98,9 +93,7 @@ data class DayFive(val input: String) : Day<Long> {
          * @return A list of LongRange objects based on the seeds.
          */
         fun seedRanges(): List<LongRange> {
-            return seeds
-                .chunked(2)
-                .map { (start, len) -> LongRange(start, start + len - 1) }
+            return seeds.chunked(2).map { (start, len) -> LongRange(start, start + len - 1) }
         }
 
         /**
@@ -116,7 +109,6 @@ data class DayFive(val input: String) : Day<Long> {
             }
             return result
         }
-
     }
 
     /**
@@ -162,5 +154,4 @@ data class DayFive(val input: String) : Day<Long> {
             return if (value in source until source + range) destination + (value - source) else null
         }
     }
-
 }

@@ -1,16 +1,12 @@
 package me.luchs.aoc2023
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class DayFiveTest {
 
-    val input = """
+    val input =
+        """
         seeds: 79 14 55 13
 
         seed-to-soil map:
@@ -44,7 +40,7 @@ class DayFiveTest {
         humidity-to-location map:
         60 56 37
         56 93 4
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun partOne() {
@@ -57,5 +53,4 @@ class DayFiveTest {
         val result = DayFive(input).partTwo()
         assertEquals(46, result)
     }
-
 }

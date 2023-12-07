@@ -71,8 +71,9 @@ data class DayFour(val input: String) : Day<Int> {
             /**
              * Parses a string and returns a list of integers.
              *
-             * The string is split by space character (' '), then any empty or blank strings are filtered out.
-             * Finally, each non-empty string is converted to an integer using the `toInt()` function.
+             * The string is split by space character (' '), then any empty or blank strings are filtered
+             * out. Finally, each non-empty string is converted to an integer using the `toInt()`
+             * function.
              *
              * @return A list of integers parsed from the string.
              */
