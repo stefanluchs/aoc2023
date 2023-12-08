@@ -77,9 +77,11 @@ data class DaySeven(val input: String) : Day<Int> {
              */
             private fun List<Int>.toGroups(withJoker: Boolean): List<Int> {
                 return if (withJoker) {
-                    // calculate all possible groups when using the joker as wildcard for any card
+                    // calculate all possible groups when using the joker as wildcard for any card id
                     val possibleGroups =
-                        CARD_IDS.map { card -> this.map { if (it == JOKER_ID) card else it }.toGroups(false) }
+                        CARD_IDS.map { cardId ->
+                            this.map { if (it == JOKER_ID) cardId else it }.toGroups(false)
+                        }
                     // find the best possible solution for the replacement by sorting all possible outcomes
                     possibleGroups.sortedWith(compareBy({ it.getOrNull(0) }, { it.getOrNull(1) })).last()
                 } else {
