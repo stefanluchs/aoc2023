@@ -48,11 +48,11 @@ data class DayNine(val input: String) : Day<Long> {
             number: (List<Long>) -> Long,
             operation: (Long, Long) -> Long
         ): Long {
-            val differenceSeries = this.differenceSeries()
-            return if (differenceSeries.isAllZero()) {
+            val differences = this.differences()
+            return if (differences.isAllZero()) {
                 number(this)
             } else {
-                operation(number(this), differenceSeries.predictValue(number, operation))
+                operation(number(this), differences.predictValue(number, operation))
             }
         }
 
@@ -64,7 +64,7 @@ data class DayNine(val input: String) : Day<Long> {
          *
          * @return The difference series as a list of long values.
          */
-        private fun List<Long>.differenceSeries(): List<Long> {
+        private fun List<Long>.differences(): List<Long> {
             return this.zipWithNext().map { it.second - it.first }
         }
 
