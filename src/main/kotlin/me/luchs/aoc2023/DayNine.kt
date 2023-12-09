@@ -12,7 +12,8 @@ data class DayNine(val input: String) : Day<Long> {
     data class Series(val values: List<Long>) {
         companion object {
             operator fun invoke(input: String): List<Series> {
-                return input.lines().map { line -> line.split(' ').map { it.toLong() } }.map { Series(it) }
+                return input.lines().map { line -> line.split(' ').map { it.toLong() } }
+                    .map { Series(it) }
             }
         }
 
@@ -48,7 +49,7 @@ data class DayNine(val input: String) : Day<Long> {
             operation: (Long, Long) -> Long
         ): Long {
             val differenceSeries = this.differenceSeries()
-            return if (differenceSeries.sumOf { it } == 0L && differenceSeries.size < 2) {
+            return if (differenceSeries.isAllZero()) {
                 number(this)
             } else {
                 operation(number(this), differenceSeries.predictValue(number, operation))
@@ -65,6 +66,10 @@ data class DayNine(val input: String) : Day<Long> {
          */
         private fun List<Long>.differenceSeries(): List<Long> {
             return this.zipWithNext().map { it.second - it.first }
+        }
+
+        private fun List<Long>.isAllZero(): Boolean {
+            return this.all { it == 0L }
         }
     }
 }
