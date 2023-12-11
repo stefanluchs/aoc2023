@@ -12,8 +12,7 @@ data class DayNine(val input: String) : Day<Long> {
     data class Series(val values: List<Long>) {
         companion object {
             operator fun invoke(input: String): List<Series> {
-                return input.lines().map { line -> line.split(' ').map { it.toLong() } }
-                    .map { Series(it) }
+                return input.lines().map { line -> line.split(' ').map { it.toLong() } }.map { Series(it) }
             }
         }
 

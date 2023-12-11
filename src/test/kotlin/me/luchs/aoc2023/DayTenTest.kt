@@ -3,17 +3,17 @@ package me.luchs.aoc2023
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-
 class DayTenTest {
 
-    private val input = """
+    private val input =
+        """
         -L|F7
         7S-7|
         L|7||
         -L-J|
         L|-JF
 
-    """.trimIndent()
+        """.trimIndent()
 
     private val input2 =
         """
@@ -59,7 +59,8 @@ class DayTenTest {
         Assertions.assertEquals(2, result.size)
     }
 
-    val example3 = """
+    val example3 =
+        """
         ...........
         .S-------7.
         .|F-----7|.
@@ -69,9 +70,10 @@ class DayTenTest {
         .|..|.|..|.
         .L--J.L--J.
         ...........
-    """.trimIndent()
+        """.trimIndent()
 
-    val example4 = """
+    val example4 =
+        """
         .F----7F7F7F7F-7....
         .|F--7||||||||FJ....
         .||.FJ||||||||L7....
@@ -82,9 +84,10 @@ class DayTenTest {
         .....|FJLJ|FJ|F7|.LJ
         ....FJL-7.||.||||...
         ....L---J.LJ.LJLJ...
-    """.trimIndent()
+        """.trimIndent()
 
-    val example5 = """
+    val example5 =
+        """
         FF7FSF7F7F7F7F7F---7
         L|LJ||||||||||||F--J
         FL-7LJLJ||||||LJL-77
@@ -95,9 +98,10 @@ class DayTenTest {
         7-L-JL7||F7|L7F-7F7|
         L.L7LFJ|||||FJL7||LJ
         L7JLJL-JLJLJL--JLJ.L
-    """.trimIndent()
+        """.trimIndent()
 
-    val example6 = """
+    val example6 =
+        """
         ..........
         .S------7.
         .|F----7|.
@@ -107,7 +111,7 @@ class DayTenTest {
         .|II||II|.
         .L--JL--J.
         ..........
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun partTwo() {
@@ -132,6 +136,4 @@ class DayTenTest {
         val result = DayTen(example6).partTwo()
         Assertions.assertEquals(4, result)
     }
-
-
 }
