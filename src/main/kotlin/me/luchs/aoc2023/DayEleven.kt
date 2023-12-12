@@ -1,11 +1,12 @@
 package me.luchs.aoc2023
 
 import me.luchs.aoc2023.shared.Point
+import me.luchs.aoc2023.shared.distinctPairs
 
 data class DayEleven(val input: String) : Day<Long> {
     override fun partOne(): Long {
         val space = Space(input).expand()
-        val pairs = space.pairs()
+        val pairs = space.galaxies.distinctPairs()
         return pairs.sumOf { it.first.manhattanDistanceTo(it.second) }
     }
 
@@ -15,7 +16,7 @@ data class DayEleven(val input: String) : Day<Long> {
 
     fun partTwo(expansionFactor: Long): Long {
         val space = Space(input).expand(expansionFactor)
-        val pairs = space.pairs()
+        val pairs = space.galaxies.distinctPairs()
         return pairs.sumOf { it.first.manhattanDistanceTo(it.second) }
     }
 
@@ -62,21 +63,5 @@ data class DayEleven(val input: String) : Day<Long> {
             return Space(expandedGalaxies)
         }
 
-        /**
-         * Generates all distinct pairs of points from the list of galaxies.
-         *
-         * @return a set of pairs where each pair consists of two distinct points from the galaxies
-         * list.
-         */
-        fun pairs(): Set<Pair<Point, Point>> {
-            val distinctPairs = mutableSetOf<Pair<Point, Point>>()
-            for (i in 0 until galaxies.size - 1) {
-                for (j in i + 1 until galaxies.size) {
-                    val pair = Pair(galaxies[i], galaxies[j])
-                    distinctPairs.add(pair)
-                }
-            }
-            return distinctPairs
-        }
     }
 }

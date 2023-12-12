@@ -48,12 +48,6 @@ class DayElevenTest {
     }
 
     @Test
-    fun pairs() {
-        val pairs = DayEleven.Space(input).expand().pairs()
-        Assertions.assertEquals(36, pairs.size)
-    }
-
-    @Test
     fun path_1_to7() {
         val space = DayEleven.Space(input).expand()
         val path = AStarAlgorithm(space.galaxies[0], space.galaxies[6]).computeMinimalPath()

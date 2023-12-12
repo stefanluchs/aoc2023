@@ -21,8 +21,6 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
             Point(row + 1, column),
             Point(row - 1, column)
         )
-            .filter { it.row >= 0 }
-            .filter { it.column >= 0 }
     }
 
     override fun equals(other: Any?): Boolean {
