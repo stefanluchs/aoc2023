@@ -40,9 +40,11 @@ data class DayThirteen(val input: String) : Day<Int> {
             expectedDiffCount: Int = 0,
         ): Int {
 
+            // provider for columns or rows from the matrix
             val sliceProvider: (Int) -> Binary =
                 { index -> if (transposed) row(index) else column(index) }
 
+            // max row or column
             val maxIndex = if (transposed) matrix.maxRow() else matrix.maxColumn()
 
             return (0..maxIndex)
