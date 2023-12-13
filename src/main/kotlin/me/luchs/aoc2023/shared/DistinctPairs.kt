@@ -3,7 +3,8 @@ package me.luchs.aoc2023.shared
 /**
  * Returns a set of distinct pairs of elements of the list.
  *
- * @return the set of distinct pairs where each pair consists of two distinct elements from the list.
+ * @return the set of distinct pairs where each pair consists of two distinct elements from the
+ * list.
  *
  * @param T the type of elements in the list.
  */

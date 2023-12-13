@@ -25,5 +25,4 @@ class PairTest {
         val pairs = DayEleven.Space(input).expand().galaxies.distinctPairs()
         Assertions.assertEquals(36, pairs.size)
     }
-
 }

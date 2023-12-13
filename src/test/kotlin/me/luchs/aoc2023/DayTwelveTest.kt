@@ -3,17 +3,17 @@ package me.luchs.aoc2023
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-
 class DayTwelveTest {
 
-    private val inputClear = """
+    private val inputClear =
+        """
         #.#.### 1,1,3
         .#...#....###. 1,1,3
         .#.###.#.###### 1,3,1,6
         ####.#...#... 4,1,1
         #....######..#####. 1,6,5
         .###.##....# 3,2,1
-    """.trimIndent()
+        """.trimIndent()
 
     private val input =
         """
@@ -53,5 +53,4 @@ class DayTwelveTest {
         val result = DayTwelve(input).partTwo()
         Assertions.assertEquals(525152, result)
     }
-
 }

@@ -62,6 +62,5 @@ data class DayEleven(val input: String) : Day<Long> {
 
             return Space(expandedGalaxies)
         }
-
     }
 }
