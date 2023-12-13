@@ -7,16 +7,16 @@ data class DayThirteen(val input: String) : Day<Int> {
 
     override fun partOne(): Int {
         return Mirrors(input).sumOf {
-            val vertical = it.reflectionIndex(transposed = false).sum()
-            val horizontal = it.reflectionIndex(transposed = true).sum()
+            val vertical = it.reflectionIndex(transposed = false)
+            val horizontal = it.reflectionIndex(transposed = true)
             vertical + horizontal * 100
         }
     }
 
     override fun partTwo(): Int {
         return Mirrors(input).sumOf {
-            val vertical = it.reflectionIndex(transposed = false, expectedDiffCount = 1).sum()
-            val horizontal = it.reflectionIndex(transposed = true, expectedDiffCount = 1).sum()
+            val vertical = it.reflectionIndex(transposed = false, expectedDiffCount = 1)
+            val horizontal = it.reflectionIndex(transposed = true, expectedDiffCount = 1)
             vertical + horizontal * 100
         }
     }
@@ -38,30 +38,33 @@ data class DayThirteen(val input: String) : Day<Int> {
         fun reflectionIndex(
             transposed: Boolean,
             expectedDiffCount: Int = 0,
-        ): List<Int> {
+        ): Int {
 
             val sliceProvider: (Int) -> Binary =
                 { index -> if (transposed) row(index) else column(index) }
 
             val maxIndex = if (transposed) matrix.maxRow() else matrix.maxColumn()
 
-            val validPairs = (0..maxIndex)
+            return (0..maxIndex)
                 .associateWith { sliceProvider(it) }
                 .entries
+                // create pairs with next row / column
                 .zipWithNext()
+                // remove all pairs with too much difference
                 .filterNot { it.first.value.bitDifference(it.second.value) > expectedDiffCount }
+                // keep number of differences for center rows / columns for later comparison
                 .associateWith { it.first.value.bitDifference(it.second.value) }
+                // compare sum of the differences of all relevant symmetrical rows / column with expected diff count
                 .filter {
-                    val matchingPairs = (it.key.first.key to it.key.second.key)
+                    val diff = (it.key.first.key to it.key.second.key)
                         .symmetricalPairs(maxIndex)
-                        .map {
-                            sliceProvider(it.first).bitDifference(sliceProvider(it.second))
-                        }
-                    matchingPairs.sum() + it.value == expectedDiffCount
+                        .sumOf { sliceProvider(it.first).bitDifference(sliceProvider(it.second)) }
+                    // sum of differences + differences of center rows / columns
+                    diff + it.value == expectedDiffCount
                 }
-                .map { it.key }
-
-            return validPairs.map { it.second.key }
+                // map to second row / column index
+                .map { it.key.second.key }
+                .sum()
         }
 
         private fun Pair<Int, Int>.symmetricalPairs(maxIndex: Int): List<Pair<Int, Int>> {
