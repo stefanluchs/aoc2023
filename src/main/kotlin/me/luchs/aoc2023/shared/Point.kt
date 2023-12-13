@@ -2,7 +2,10 @@ package me.luchs.aoc2023.shared
 
 import kotlin.math.abs
 
+
 data class Point(val row: Long, val column: Long, val value: Char? = null) {
+
+    constructor(row: Int, column: Int, value: Char) : this(row.toLong(), column.toLong(), value)
 
     companion object {
         operator fun invoke(pair: Pair<Long, Long>): Point {
@@ -41,3 +44,15 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
         return result.toInt()
     }
 }
+
+fun List<Point>.asString(): String {
+    return this.map { it.value }.joinToString(separator = "")
+}
+
+fun List<Point>.slice(index: Int, vertical: Boolean): List<Point> =
+    if (vertical) this.filter { it.column == index.toLong() } else
+        this.filter { it.row == index.toLong() }
+
+fun List<Point>.maxColumn(): Int = this.maxOf { it.column }.toInt()
+
+fun List<Point>.maxRow(): Int = this.maxOf { it.row }.toInt()
