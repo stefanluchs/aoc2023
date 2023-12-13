@@ -6,5 +6,5 @@ fun main() {
     val input = readInput("DayThirteen")
     val day = DayThirteen(input.trimIndent())
     println("Part One: " + day.partOne())
-    //println("Part Two: " + day.partTwo())
+    println("Part Two: " + day.partTwo())
 }

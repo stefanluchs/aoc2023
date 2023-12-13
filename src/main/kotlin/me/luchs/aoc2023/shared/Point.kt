@@ -56,3 +56,6 @@ fun List<Point>.slice(index: Int, vertical: Boolean): List<Point> =
 fun List<Point>.maxColumn(): Int = this.maxOf { it.column }.toInt()
 
 fun List<Point>.maxRow(): Int = this.maxOf { it.row }.toInt()
+
+fun List<Point>.transpose(): List<Point> = this.map { Point(it.column, it.row, it.value) }
+

@@ -7,28 +7,17 @@ data class DayThirteen(val input: String) : Day<Int> {
 
     override fun partOne(): Int {
         return Mirrors(input).sumOf {
-            val vertical = it.verticalReflectionIndex()
-            val horizontal = it.horizontalReflectionIndex()
-            (vertical ?: 0) + (horizontal ?: 0) * 100
+            val vertical = it.reflectionIndex(transposed = false).sum()
+            val horizontal = it.reflectionIndex(transposed = true).sum()
+            vertical + horizontal * 100
         }
     }
 
     override fun partTwo(): Int {
         return Mirrors(input).sumOf {
-            val verticalExclusion = it.verticalReflectionIndex()
-            val horizontalExclusion = it.horizontalReflectionIndex()
-
-            val vertical = it.verticalReflectionIndex(
-                offBy = 1,
-                offenders = 1,
-                excludeIndex = verticalExclusion
-            )
-            val horizontal = it.horizontalReflectionIndex(
-                offBy = 1,
-                offenders = 1,
-                excludeIndex = horizontalExclusion
-            )
-            (vertical ?: 0) + (horizontal ?: 0) * 100
+            val vertical = it.reflectionIndex(transposed = false, expectedDiffCount = 1).sum()
+            val horizontal = it.reflectionIndex(transposed = true, expectedDiffCount = 1).sum()
+            vertical + horizontal * 100
         }
     }
 
@@ -46,65 +35,33 @@ data class DayThirteen(val input: String) : Day<Int> {
             }
         }
 
-        fun verticalReflectionIndex(
-            offBy: Int = 0,
-            offenders: Int? = null,
-            excludeIndex: Int? = null
-        ): Int? {
-            return horizontalReflectionIndex2(
-                offBy = offBy,
-                offenders = offenders,
-                sliceIndex = 0..matrix.maxColumn(),
-                excludeIndex = excludeIndex,
-                maxIndex = matrix.maxColumn()
-            )
-            { index -> column(index) }
-        }
+        fun reflectionIndex(
+            transposed: Boolean,
+            expectedDiffCount: Int = 0,
+        ): List<Int> {
 
-        fun horizontalReflectionIndex(
-            offBy: Int = 0,
-            offenders: Int? = null,
-            excludeIndex: Int? = null
-        ): Int? {
-            return horizontalReflectionIndex2(
-                offBy = offBy,
-                offenders = offenders,
-                sliceIndex = 0..matrix.maxRow(),
-                excludeIndex = excludeIndex,
-                maxIndex = matrix.maxRow()
-            )
-            { index -> row(index) }
-        }
+            val sliceProvider: (Int) -> Binary =
+                { index -> if (transposed) row(index) else column(index) }
 
-        private fun horizontalReflectionIndex2(
-            offBy: Int = 0,
-            offenders: Int? = null,
-            sliceIndex: IntRange,
-            maxIndex: Int,
-            excludeIndex: Int?,
-            sliceProvider: (Int) -> Binary
-        ): Int? {
-            val pairs = sliceIndex
+            val maxIndex = if (transposed) matrix.maxRow() else matrix.maxColumn()
+
+            val validPairs = (0..maxIndex)
                 .associateWith { sliceProvider(it) }
                 .entries
                 .zipWithNext()
-                .filterNot {
-                    if (excludeIndex != null) {
-                        excludeIndex == it.first.key || excludeIndex == it.second.key
-                    } else false
-                }
-
-            val validPairs = pairs
-                .filter { it.first.value.bitDifference(it.second.value) == 0 }
+                .filterNot { it.first.value.bitDifference(it.second.value) > expectedDiffCount }
+                .associateWith { it.first.value.bitDifference(it.second.value) }
                 .filter {
-                    val pairs = (it.first.key to it.second.key).symmetricalPairs(maxIndex)
-                    val matchingPairs = pairs.count {
-                        sliceProvider(it.first).bitDifference(sliceProvider(it.second)) == offBy
-                    }
-                    matchingPairs == (offenders ?: pairs.size)
+                    val matchingPairs = (it.key.first.key to it.key.second.key)
+                        .symmetricalPairs(maxIndex)
+                        .map {
+                            sliceProvider(it.first).bitDifference(sliceProvider(it.second))
+                        }
+                    matchingPairs.sum() + it.value == expectedDiffCount
                 }
+                .map { it.key }
 
-            return validPairs.firstOrNull()?.second?.key
+            return validPairs.map { it.second.key }
         }
 
         private fun Pair<Int, Int>.symmetricalPairs(maxIndex: Int): List<Pair<Int, Int>> {
