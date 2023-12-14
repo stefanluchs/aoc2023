@@ -24,31 +24,25 @@ data class DayThirteen(val input: String) : Day<Int> {
     data class Mirrors(val matrix: List<Point>) {
 
         companion object {
-            operator fun invoke(input: String): List<Mirrors> {
-                return input.split("\n\n")
-                    .map { block ->
-                        block.lines().flatMapIndexed { row, line ->
-                            line.toCharArray()
-                                .mapIndexed { column, char -> Point(row, column, char) }
-                        }.let { Mirrors(it) }
-                    }
-            }
+            operator fun invoke(input: String): List<Mirrors> = input.split("\n\n")
+                .map { block ->
+                    block.lines().flatMapIndexed { row, line ->
+                        line.toCharArray().mapIndexed { column, char -> Point(row, column, char) }
+                    }.let { Mirrors(it) }
+                }
         }
 
-        fun reflectionIndex(
-            transposed: Boolean,
-            expectedDiffCount: Int = 0,
-        ): Int {
+        fun reflectionIndex(transposed: Boolean, expectedDiffCount: Int = 0): Int {
 
             // provider for columns or rows from the matrix
-            val sliceProvider: (Int) -> Binary =
-                { index -> if (transposed) row(index) else column(index) }
+            val slice: (Int) -> Binary = { index -> if (transposed) row(index) else column(index) }
 
             // max row or column
             val maxIndex = if (transposed) matrix.maxRow() else matrix.maxColumn()
 
             return (0..maxIndex)
-                .associateWith { sliceProvider(it) }
+                // get all rows / columns from matrix
+                .associateWith { slice(it) }
                 .entries
                 // create pairs with next row / column
                 .zipWithNext()
@@ -58,9 +52,8 @@ data class DayThirteen(val input: String) : Day<Int> {
                 .associateWith { it.first.value.bitDifference(it.second.value) }
                 // compare sum of the differences of all relevant symmetrical rows / column with expected diff count
                 .filter {
-                    val diff = (it.key.first.key to it.key.second.key)
-                        .symmetricalPairs(maxIndex)
-                        .sumOf { sliceProvider(it.first).bitDifference(sliceProvider(it.second)) }
+                    val diff = (it.key.first.key to it.key.second.key).symmetricalPairs(maxIndex)
+                        .sumOf { slice(it.first).bitDifference(slice(it.second)) }
                     // sum of differences + differences of center rows / columns
                     diff + it.value == expectedDiffCount
                 }
@@ -69,24 +62,15 @@ data class DayThirteen(val input: String) : Day<Int> {
                 .sum()
         }
 
-        private fun Pair<Int, Int>.symmetricalPairs(maxIndex: Int): List<Pair<Int, Int>> {
-            return (1..min(this.first, maxIndex - this.second))
-                .map { this.first - it to this.second + it }
-        }
+        private fun Pair<Int, Int>.symmetricalPairs(maxIndex: Int): List<Pair<Int, Int>> =
+            (1..min(this.first, maxIndex - this.second)).map { this.first - it to this.second + it }
 
-        private fun column(index: Int): Binary {
-            return matrix.slice(index, vertical = true).toBinary()
-        }
+        private fun column(index: Int): Binary = matrix.slice(index, vertical = true).toBinary()
 
-        private fun row(index: Int): Binary {
-            return matrix.slice(index, vertical = false).toBinary()
-        }
+        private fun row(index: Int): Binary = matrix.slice(index, vertical = false).toBinary()
 
-        private fun List<Point>.toBinary(): Binary {
-            return this.asString()
-                .replace('#', '1')
-                .replace('.', '0')
-        }
+        private fun List<Point>.toBinary(): Binary =
+            this.asString().replace('#', '1').replace('.', '0')
 
     }
 

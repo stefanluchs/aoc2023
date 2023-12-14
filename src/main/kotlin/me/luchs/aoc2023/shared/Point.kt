@@ -17,6 +17,38 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
         return abs(this.row - other.row) + abs(this.column - other.column)
     }
 
+    fun right(limit: Int): Point? {
+        return if (column + 1 < limit) null else right()
+    }
+
+    fun right(): Point {
+        return Point(row, column + 1, value)
+    }
+
+    fun left(limit: Int = 0): Point? {
+        return if (column - 1 < limit) null else left()
+    }
+
+    fun left(): Point {
+        return Point(row, column - 1, value)
+    }
+
+    fun up(limit: Int = 0): Point? {
+        return if (row - 1 < limit) null else up()
+    }
+
+    fun up(): Point {
+        return Point(row - 1, column, value)
+    }
+
+    fun down(limit: Int): Point? {
+        return if (row + 1 > limit) null else down()
+    }
+
+    fun down(): Point {
+        return Point(row + 1, column, value)
+    }
+
     fun adjacent4(): List<Point> {
         return listOf(
             Point(row, column + 1),
