@@ -5,9 +5,7 @@ import me.luchs.aoc2023.shared.findCycleInTransitions
 
 data class DayFourteen(val input: String) : Day<Int> {
 
-    override fun partOne(): Int {
-        return Matrix(input).tiltUp().totalLoad()
-    }
+    override fun partOne(): Int = Matrix(input).tiltUp().totalLoad()
 
     override fun partTwo(): Int {
         var map = Matrix(input)
@@ -27,24 +25,17 @@ data class DayFourteen(val input: String) : Day<Int> {
 
         return map.totalLoad()
     }
-
 }
 
-fun Matrix.totalLoad(): Int {
-    return this.entries.filter { it.value!! == 'O' }.sumOf { this.maxRow() - it.row.toInt() + 1 }
-}
+fun Matrix.totalLoad(): Int = this.entries
+    .filter { it.value!! == 'O' }
+    .sumOf { this.maxRow() - it.row.toInt() + 1 }
 
-fun Matrix.tiltCycle(): Matrix {
-    return this
-        .tiltUp()
-        .rotateRight()
-        .tiltUp()
-        .rotateRight()
-        .tiltUp()
-        .rotateRight()
-        .tiltUp()
-        .rotateRight()
-}
+fun Matrix.tiltCycle(): Matrix = this
+    .tiltUp().rotateRight()
+    .tiltUp().rotateRight()
+    .tiltUp().rotateRight()
+    .tiltUp().rotateRight()
 
 fun Matrix.tiltUp(moving: Char = 'O', fixed: Char = '#', blank: Char = '.'): Matrix {
 
