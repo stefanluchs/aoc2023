@@ -19,7 +19,7 @@ class DayFifteenTest {
     @Test
     fun partTwo() {
         val result = DayFifteen(input).partTwo()
-        //Assertions.assertEquals(64, result)
+        Assertions.assertEquals(145, result)
     }
 
 }
