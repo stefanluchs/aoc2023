@@ -36,6 +36,10 @@ data class Matrix(val entries: List<Point>) {
         return entries.find { it.row.toInt() == row && it.column.toInt() == column }
     }
 
+    fun rows(): IntRange = 0..maxRow()
+
+    fun columns(): IntRange = 0..maxColumn()
+
     fun maxRow(): Int {
         return entries.maxOf { it.row }.toInt()
     }

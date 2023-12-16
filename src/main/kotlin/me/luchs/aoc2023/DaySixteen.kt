@@ -5,26 +5,48 @@ import me.luchs.aoc2023.shared.Matrix
 import me.luchs.aoc2023.shared.Point
 
 data class DaySixteen(val input: String) : Day<Int> {
-    override fun partOne(): Int {
 
-        val matrix = Matrix(input)
+    private val matrix = Matrix(input)
 
-        var state = State(
-            path = mutableSetOf(),
-            beams = mutableListOf(Beam(position = Point(0, -1), direction = Direction4.RIGHT))
-        )
+    private val maxRow = matrix.maxRow()
+    private val maxColumn = matrix.maxColumn()
+
+    override fun partOne(): Int =
+        energizedTiles(Beam(position = Point(0, -1), direction = Direction4.RIGHT))
+
+    override fun partTwo(): Int =
+        (matrix.columns().flatMap { column ->
+            listOf(
+                Beam(position = Point(-1, column.toLong()), direction = Direction4.DOWN),
+                Beam(position = Point(maxRow + 1L, column.toLong()), direction = Direction4.UP),
+            )
+        } + matrix.rows().flatMap { row ->
+            listOf(
+                Beam(position = Point(row.toLong(), -1), direction = Direction4.RIGHT),
+                Beam(position = Point(row.toLong(), maxColumn + 1L), direction = Direction4.LEFT),
+            )
+        }).maxOf { energizedTiles(start = it) }
+
+
+    private fun energizedTiles(start: Beam): Int {
+
+        var state = State(beams = listOf(start))
 
         while (state.beams.isNotEmpty()) {
             state = state.next(matrix)
         }
 
-        val energized = state.path.map { it.position }.distinct()
-
-        return energized.size
+        return state.path.map { it.position }.distinct().size
     }
 
-    override fun partTwo(): Int {
-        TODO("Not yet implemented")
+    data class State(val path: MutableSet<Beam> = mutableSetOf(), val beams: List<Beam>) {
+
+        fun next(matrix: Matrix): State = beams
+            .flatMap { it.next(matrix) }
+            .filterNot { it in path }
+            .also { path.addAll(it) }
+            .let { State(path, it) }
+
     }
 
     data class Beam(val position: Point, val direction: Direction4) {
@@ -33,55 +55,57 @@ data class DaySixteen(val input: String) : Day<Int> {
 
             val next = position.move(direction)
 
-            val node = matrix.position(next) ?: return emptyList()
+            // if the next position is outside of matrix beam terminated
+            val node = matrix.position(next) ?: return this.terminate()
 
             return when (node.value!!) {
                 '|' -> {
                     if (direction in listOf(Direction4.LEFT, Direction4.RIGHT)) {
+                        // split beam into up and down
                         listOf(Beam(next, Direction4.DOWN), Beam(next, Direction4.UP))
                     } else {
-                        listOf(Beam(next, direction))
+                        // proceed to the next point without changes
+                        proceedTo(point = next)
                     }
                 }
 
                 '-' -> {
                     if (direction in listOf(Direction4.UP, Direction4.DOWN)) {
+                        // split beam into left and right
                         listOf(Beam(next, Direction4.LEFT), Beam(next, Direction4.RIGHT))
                     } else {
-                        listOf(Beam(next, direction))
+                        // proceed to the next point without changes
+                        proceedTo(point = next)
                     }
                 }
 
                 '\\' -> {
+                    // change the beam direction
                     when (direction) {
-                        Direction4.UP -> Beam(next, Direction4.LEFT)
-                        Direction4.DOWN -> Beam(next, Direction4.RIGHT)
-                        Direction4.LEFT -> Beam(next, Direction4.UP)
-                        Direction4.RIGHT -> Beam(next, Direction4.DOWN)
-                    }.let { listOf(it) }
+                        Direction4.UP -> Direction4.LEFT
+                        Direction4.DOWN -> Direction4.RIGHT
+                        Direction4.LEFT -> Direction4.UP
+                        Direction4.RIGHT -> Direction4.DOWN
+                    }.let { Beam(next, it) }.let { listOf(it) }
                 }
 
                 '/' -> {
+                    // change the beam direction
                     when (direction) {
-                        Direction4.UP -> Beam(next, Direction4.RIGHT)
-                        Direction4.DOWN -> Beam(next, Direction4.LEFT)
-                        Direction4.LEFT -> Beam(next, Direction4.DOWN)
-                        Direction4.RIGHT -> Beam(next, Direction4.UP)
-                    }.let { listOf(it) }
+                        Direction4.UP -> Direction4.RIGHT
+                        Direction4.DOWN -> Direction4.LEFT
+                        Direction4.LEFT -> Direction4.DOWN
+                        Direction4.RIGHT -> Direction4.UP
+                    }.let { Beam(next, it) }.let { listOf(it) }
                 }
 
-                else -> listOf(Beam(next, direction))
+                else -> proceedTo(point = next)
             }
         }
-    }
 
-    data class State(val path: MutableSet<Beam>, val beams: List<Beam>) {
+        private fun proceedTo(point: Point): List<Beam> = listOf(Beam(point, direction))
 
-        fun next(matrix: Matrix): State {
-            val newBeams: List<Beam> = beams.flatMap { it.next(matrix) }.filterNot { it in path }
-            newBeams.forEach { path.add(it) }
-            return State(path, newBeams)
-        }
+        private fun terminate(): List<Beam> = emptyList()
 
     }
 
