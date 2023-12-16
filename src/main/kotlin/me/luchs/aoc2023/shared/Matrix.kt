@@ -28,6 +28,10 @@ data class Matrix(val entries: List<Point>) {
         return this
     }
 
+    fun position(point: Point): Point? {
+        return entries.find { it.row == point.row && it.column == point.column }
+    }
+
     fun position(row: Int, column: Int): Point? {
         return entries.find { it.row.toInt() == row && it.column.toInt() == column }
     }

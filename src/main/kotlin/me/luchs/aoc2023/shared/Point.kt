@@ -17,6 +17,15 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
         return abs(this.row - other.row) + abs(this.column - other.column)
     }
 
+    fun move(direction: Direction4): Point {
+        return when(direction) {
+            Direction4.UP -> up()
+            Direction4.DOWN -> down()
+            Direction4.LEFT -> left()
+            Direction4.RIGHT -> right()
+        }
+    }
+
     fun right(limit: Int): Point? {
         return if (column + 1 < limit) null else right()
     }
