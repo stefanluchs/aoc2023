@@ -2,7 +2,13 @@ package me.luchs.aoc2023.shared
 
 import java.util.PriorityQueue
 
-data class AStarAlgorithm(val start: Node, val goal: Node) {
+data class AStarAlgorithm(
+    val start: Node,
+    val goal: Node,
+    val g: (Node) -> Long = { it.g + 1 },
+    val h: (Node) -> Long = { node -> node.point.manhattanDistanceTo(goal.point) },
+    val neighbours: (Node) -> List<Point> = { it.point.adjacent4() }
+) {
 
     companion object {
         operator fun invoke(start: Point, goal: Point): AStarAlgorithm {
@@ -25,17 +31,17 @@ data class AStarAlgorithm(val start: Node, val goal: Node) {
 
             closedSet.add(current)
 
-            for (neighbor in current.point.adjacent4().map { Node(it) }) {
+            for (neighbor in neighbours(current).map { Node(it) }) {
                 if (neighbor in closedSet) {
                     continue
                 }
 
-                val tentativeG = current.g + 1
+                val tentativeG = g(current)
 
                 if (neighbor !in queue || tentativeG < neighbor.g) {
                     neighbor.parent = current
                     neighbor.g = tentativeG
-                    neighbor.h = neighbor.point.manhattanDistanceTo(goal.point)
+                    neighbor.h = h(neighbor)
 
                     if (neighbor !in queue) {
                         queue.add(neighbor)

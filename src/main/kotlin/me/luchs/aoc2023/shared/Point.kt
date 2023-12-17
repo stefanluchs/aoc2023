@@ -7,6 +7,8 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
 
     constructor(row: Int, column: Int, value: Char) : this(row.toLong(), column.toLong(), value)
 
+    constructor(row: Int, column: Int) : this(row.toLong(), column.toLong(), null)
+
     companion object {
         operator fun invoke(pair: Pair<Long, Long>): Point {
             return Point(pair.first, pair.second)
@@ -17,12 +19,12 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
         return abs(this.row - other.row) + abs(this.column - other.column)
     }
 
-    fun move(direction: Direction4): Point {
-        return when(direction) {
-            Direction4.UP -> up()
-            Direction4.DOWN -> down()
-            Direction4.LEFT -> left()
-            Direction4.RIGHT -> right()
+    fun move(direction: Direction): Point {
+        return when (direction) {
+            Direction.UP -> up()
+            Direction.DOWN -> down()
+            Direction.LEFT -> left()
+            Direction.RIGHT -> right()
         }
     }
 
@@ -58,12 +60,21 @@ data class Point(val row: Long, val column: Long, val value: Char? = null) {
         return Point(row + 1, column, value)
     }
 
+    fun adjacent4WithDirection(): Map<Direction, Point> {
+        return mapOf(
+            Direction.RIGHT to right(),
+            Direction.LEFT to left(),
+            Direction.DOWN to down(),
+            Direction.UP to up()
+        )
+    }
+
     fun adjacent4(): List<Point> {
         return listOf(
-            Point(row, column + 1),
-            Point(row, column - 1),
-            Point(row + 1, column),
-            Point(row - 1, column)
+            right(),
+            left(),
+            down(),
+            up()
         )
     }
 

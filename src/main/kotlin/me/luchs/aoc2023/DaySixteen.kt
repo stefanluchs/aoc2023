@@ -1,6 +1,6 @@
 package me.luchs.aoc2023
 
-import me.luchs.aoc2023.shared.Direction4
+import me.luchs.aoc2023.shared.Direction
 import me.luchs.aoc2023.shared.Matrix
 import me.luchs.aoc2023.shared.Point
 
@@ -12,18 +12,18 @@ data class DaySixteen(val input: String) : Day<Int> {
     private val maxColumn = matrix.maxColumn()
 
     override fun partOne(): Int =
-        energizedTiles(Beam(position = Point(0, -1), direction = Direction4.RIGHT))
+        energizedTiles(Beam(position = Point(0, -1), direction = Direction.RIGHT))
 
     override fun partTwo(): Int =
         (matrix.columns().flatMap { column ->
             listOf(
-                Beam(position = Point(-1, column.toLong()), direction = Direction4.DOWN),
-                Beam(position = Point(maxRow + 1L, column.toLong()), direction = Direction4.UP),
+                Beam(position = Point(-1, column.toLong()), direction = Direction.DOWN),
+                Beam(position = Point(maxRow + 1L, column.toLong()), direction = Direction.UP),
             )
         } + matrix.rows().flatMap { row ->
             listOf(
-                Beam(position = Point(row.toLong(), -1), direction = Direction4.RIGHT),
-                Beam(position = Point(row.toLong(), maxColumn + 1L), direction = Direction4.LEFT),
+                Beam(position = Point(row.toLong(), -1), direction = Direction.RIGHT),
+                Beam(position = Point(row.toLong(), maxColumn + 1L), direction = Direction.LEFT),
             )
         }).maxOf { energizedTiles(start = it) }
 
@@ -49,7 +49,7 @@ data class DaySixteen(val input: String) : Day<Int> {
 
     }
 
-    data class Beam(val position: Point, val direction: Direction4) {
+    data class Beam(val position: Point, val direction: Direction) {
 
         fun next(matrix: Matrix): List<Beam> {
 
@@ -60,9 +60,9 @@ data class DaySixteen(val input: String) : Day<Int> {
 
             return when (node.value!!) {
                 '|' -> {
-                    if (direction in listOf(Direction4.LEFT, Direction4.RIGHT)) {
+                    if (direction in listOf(Direction.LEFT, Direction.RIGHT)) {
                         // split beam into up and down
-                        listOf(Beam(next, Direction4.DOWN), Beam(next, Direction4.UP))
+                        listOf(Beam(next, Direction.DOWN), Beam(next, Direction.UP))
                     } else {
                         // proceed to the next point without changes
                         proceedTo(point = next)
@@ -70,9 +70,9 @@ data class DaySixteen(val input: String) : Day<Int> {
                 }
 
                 '-' -> {
-                    if (direction in listOf(Direction4.UP, Direction4.DOWN)) {
+                    if (direction in listOf(Direction.UP, Direction.DOWN)) {
                         // split beam into left and right
-                        listOf(Beam(next, Direction4.LEFT), Beam(next, Direction4.RIGHT))
+                        listOf(Beam(next, Direction.LEFT), Beam(next, Direction.RIGHT))
                     } else {
                         // proceed to the next point without changes
                         proceedTo(point = next)
@@ -82,20 +82,20 @@ data class DaySixteen(val input: String) : Day<Int> {
                 '\\' -> {
                     // change the beam direction
                     when (direction) {
-                        Direction4.UP -> Direction4.LEFT
-                        Direction4.DOWN -> Direction4.RIGHT
-                        Direction4.LEFT -> Direction4.UP
-                        Direction4.RIGHT -> Direction4.DOWN
+                        Direction.UP -> Direction.LEFT
+                        Direction.DOWN -> Direction.RIGHT
+                        Direction.LEFT -> Direction.UP
+                        Direction.RIGHT -> Direction.DOWN
                     }.let { Beam(next, it) }.let { listOf(it) }
                 }
 
                 '/' -> {
                     // change the beam direction
                     when (direction) {
-                        Direction4.UP -> Direction4.RIGHT
-                        Direction4.DOWN -> Direction4.LEFT
-                        Direction4.LEFT -> Direction4.DOWN
-                        Direction4.RIGHT -> Direction4.UP
+                        Direction.UP -> Direction.RIGHT
+                        Direction.DOWN -> Direction.LEFT
+                        Direction.LEFT -> Direction.DOWN
+                        Direction.RIGHT -> Direction.UP
                     }.let { Beam(next, it) }.let { listOf(it) }
                 }
 
