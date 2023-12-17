@@ -10,16 +10,32 @@ data class DaySeventeen(val input: String) : Day<Int> {
 
     private val matrix = Matrix(input)
 
+    private val target = Point(matrix.maxRow(), matrix.maxColumn())
+
     override fun partOne(): Int {
-        val target = Point(matrix.maxRow(), matrix.maxColumn())
-        return computeMinimalPath(State.initial(), target)
+        return computeMinimalPath(
+            start = State.initial(),
+            target = { it.position == target },
+            neighbours = { state, matrix -> state.neighboursPart1(matrix) }
+        )
     }
 
     override fun partTwo(): Int {
-        TODO("Not yet implemented")
+        return computeMinimalPath(
+            start = State.initial(stepsInDirection = 1),
+            target = { it.position == target && it.stepsInDirection >= 4 },
+            neighbours = { state, matrix -> state.neighboursPart2(matrix) }
+        )
     }
 
-    fun computeMinimalPath(start: State, target: Point): Int {
+    // https://github.com/eagely/adventofcode/blob/main/src/main/kotlin/solutions/y2023/Day17.kt
+
+    private fun computeMinimalPath(
+        start: State,
+        target: (State) -> Boolean,
+        neighbours: (State, Matrix) -> List<State>
+    ): Int {
+
         val queue = PriorityQueue<State>(compareBy { it.cost })
         val visited = HashSet<Triple<Point, Direction, Int>>()
 
@@ -32,17 +48,17 @@ data class DaySeventeen(val input: String) : Day<Int> {
                 continue
             }
 
-            if (current.position == target) {
+            if (target(current)) {
                 return current.cost
             }
 
             visited.add(Triple(current.position, current.direction, current.stepsInDirection))
 
-            queue.addAll(current.neighbours(matrix))
+            queue.addAll(neighbours(current, matrix))
 
         }
 
-        // If the open set is empty and the goal is not reached
+        // no result found
         return 0
     }
 
@@ -56,17 +72,17 @@ data class DaySeventeen(val input: String) : Day<Int> {
     ) {
         companion object {
 
-            fun initial(): State =
+            fun initial(stepsInDirection: Int = 0): State =
                 State(
                     cost = 0,
                     position = Point(0, 0),
                     previous = null,
                     direction = Direction.RIGHT,
-                    stepsInDirection = 0
+                    stepsInDirection = stepsInDirection
                 )
         }
 
-        fun neighbours(matrix: Matrix): List<State> =
+        fun neighboursPart1(matrix: Matrix): List<State> =
             position.adjacent4WithDirection()
                 .filterNot { it.value.row == previous?.position?.row && it.value.column == previous.position.column }
                 .filterNot { matrix.valueAt(it.value) == null }
@@ -81,8 +97,70 @@ data class DaySeventeen(val input: String) : Day<Int> {
                 }
                 .filterNot { it.stepsInDirection > 3 }
 
-    }
+        fun neighboursPart2(matrix: Matrix): List<State> {
 
+            val next = mutableListOf<Triple<Point, Direction, Int>>()
+
+            if (stepsInDirection < 4) {
+                next.add(
+                    Triple(
+                        this.position.move(this.direction),
+                        this.direction,
+                        this.stepsInDirection + 1
+                    )
+                )
+            } else if (stepsInDirection >= 10) {
+                next.add(
+                    Triple(
+                        this.position.move(this.direction.turnLeft()),
+                        this.direction.turnLeft(),
+                        1
+                    )
+                )
+                next.add(
+                    Triple(
+                        this.position.move(this.direction.turnRight()),
+                        this.direction.turnRight(),
+                        1
+                    )
+                )
+            } else {
+                next.add(
+                    Triple(
+                        this.position.move(this.direction),
+                        this.direction,
+                        this.stepsInDirection + 1
+                    )
+                )
+                next.add(
+                    Triple(
+                        this.position.move(this.direction.turnLeft()),
+                        this.direction.turnLeft(),
+                        1
+                    )
+                )
+                next.add(
+                    Triple(
+                        this.position.move(this.direction.turnRight()),
+                        this.direction.turnRight(),
+                        1
+                    )
+                )
+            }
+
+            return next
+                .filterNot { matrix.valueAt(it.first) == null }
+                .map { (position, direction, steps) ->
+                    State(
+                        cost = cost + matrix.valueAt(position)!!.digitToInt(),
+                        position = position,
+                        previous = this,
+                        direction = direction,
+                        stepsInDirection = steps
+                    )
+                }
+        }
+    }
 }
 
 

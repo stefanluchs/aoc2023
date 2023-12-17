@@ -22,6 +22,14 @@ class DaySeventeenTest {
         4322674655533
     """.trimIndent()
 
+    private val example2 = """
+    111111111111
+    999999999991
+    999999999991
+    999999999991
+    999999999991
+""".trimIndent()
+
 
     @Test
     fun partOne() {
@@ -32,7 +40,13 @@ class DaySeventeenTest {
     @Test
     fun partTwo() {
         val result = DaySeventeen(input).partTwo()
-        //Assertions.assertEquals(51, result)
+        Assertions.assertEquals(94, result)
+    }
+
+    @Test
+    fun partTwo_example2() {
+        val result = DaySeventeen(example2).partTwo()
+        Assertions.assertEquals(71, result)
     }
 
 }
