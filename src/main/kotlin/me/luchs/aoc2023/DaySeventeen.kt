@@ -28,8 +28,6 @@ data class DaySeventeen(val input: String) : Day<Int> {
         )
     }
 
-    // https://github.com/eagely/adventofcode/blob/main/src/main/kotlin/solutions/y2023/Day17.kt
-
     private fun computeMinimalPath(
         start: State,
         target: (State) -> Boolean,
@@ -102,50 +100,14 @@ data class DaySeventeen(val input: String) : Day<Int> {
             val next = mutableListOf<Triple<Point, Direction, Int>>()
 
             if (stepsInDirection < 4) {
-                next.add(
-                    Triple(
-                        this.position.move(this.direction),
-                        this.direction,
-                        this.stepsInDirection + 1
-                    )
-                )
+                next.add(moveForward())
             } else if (stepsInDirection >= 10) {
-                next.add(
-                    Triple(
-                        this.position.move(this.direction.turnLeft()),
-                        this.direction.turnLeft(),
-                        1
-                    )
-                )
-                next.add(
-                    Triple(
-                        this.position.move(this.direction.turnRight()),
-                        this.direction.turnRight(),
-                        1
-                    )
-                )
+                next.add(moveLeft())
+                next.add(moveRight())
             } else {
-                next.add(
-                    Triple(
-                        this.position.move(this.direction),
-                        this.direction,
-                        this.stepsInDirection + 1
-                    )
-                )
-                next.add(
-                    Triple(
-                        this.position.move(this.direction.turnLeft()),
-                        this.direction.turnLeft(),
-                        1
-                    )
-                )
-                next.add(
-                    Triple(
-                        this.position.move(this.direction.turnRight()),
-                        this.direction.turnRight(),
-                        1
-                    )
-                )
+                next.add(moveForward())
+                next.add(moveLeft())
+                next.add(moveRight())
             }
 
             return next
@@ -160,7 +122,27 @@ data class DaySeventeen(val input: String) : Day<Int> {
                     )
                 }
         }
+
+        private fun moveForward() = Triple(
+            this.position.move(this.direction),
+            this.direction,
+            this.stepsInDirection + 1
+        )
+
+        private fun moveLeft() = Triple(
+            this.position.move(this.direction.turnLeft()),
+            this.direction.turnLeft(),
+            1
+        )
+
+        private fun moveRight() = Triple(
+            this.position.move(this.direction.turnRight()),
+            this.direction.turnRight(),
+            1
+        )
+
     }
+
 }
 
 
