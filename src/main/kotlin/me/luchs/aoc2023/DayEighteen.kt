@@ -18,10 +18,10 @@ data class DayEighteen(val input: String) : Day<Long> {
     }
 
     private fun List<Plan>.volume(): Long {
-        val shoelaceArea  = this
+        val vertices = this
             .runningFold(Coordinate(0, 0)) { last, plan -> last.move(plan.direction, plan.range) }
             .reversed() // ensure counter-clock wise orientation of vertices for shoelace formula!
-            .shoelaceArea()
+        val shoelaceArea = vertices.shoelaceArea()
         val border = this.sumOf { it.range.toLong() }
         val interior = interior(shoelaceArea, border)
         return interior + border
@@ -29,7 +29,7 @@ data class DayEighteen(val input: String) : Day<Long> {
 
     data class Plan(val direction: Direction, val range: Int) {
         companion object {
-            
+
             fun fromInput(input: String, fromColor: Boolean): List<Plan> =
                 input.lines().map { Plan(it, fromColor) }
 
