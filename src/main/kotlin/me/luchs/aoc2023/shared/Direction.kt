@@ -3,6 +3,18 @@ package me.luchs.aoc2023.shared
 enum class Direction {
     UP, DOWN, LEFT, RIGHT;
 
+    companion object {
+        fun fromAbbreviation(char: Char ): Direction? {
+            return when(char) {
+                'R' -> RIGHT
+                'L' -> LEFT
+                'U' -> UP
+                'D' -> DOWN
+                else -> null
+            }
+        }
+    }
+
     fun turnLeft(): Direction {
         return when(this) {
             UP -> LEFT
@@ -20,4 +32,5 @@ enum class Direction {
             LEFT -> UP
         }
     }
+
 }
