@@ -1,97 +1,69 @@
 package me.luchs.aoc2023
 
 import me.luchs.aoc2023.shared.splitWithDelimiter
-import java.math.BigInteger
 import kotlin.math.max
 import kotlin.math.min
 
-data class DayNineteen(val input: String) : Day<BigInteger> {
+data class DayNineteen(val input: String) : Day<Long> {
 
-    override fun partOne(): BigInteger {
+    override fun partOne(): Long {
         val (workflows, parts) = parseInput(input)
-
-        val results = parts.associateWith { part ->
-            var target = "in"
-            var workflow = workflows[target]
-            while (workflow != null) {
-                target = workflow.rules.firstNotNullOf { it.evaluate(part) }
-                workflow = workflows[target]
+        return parts
+            .associateWith { part ->
+                var target = "in"
+                var workflow = workflows[target]
+                while (workflow != null) {
+                    target = workflow.evaluate(part)
+                    workflow = workflows[target]
+                }
+                target
             }
-            target
-        }
-
-        return results.entries
+            .entries
             .filter { it.value == "A" }
             .map { it.key }
-            .sumOf { part -> part.values.map { it.value }.sumOf { it }.toBigInteger() }
+            .sumOf { part -> part.values.map { it.value }.sumOf { it.toLong() } }
     }
 
-    override fun partTwo(): BigInteger {
-        /**val (workflows, parts) = parseInput(input)
+    override fun partTwo(): Long {
+        val (workflows, _) = parseInput(input)
 
-        val criteria = mutableMapOf<String, Map<String, List<Rule>>>()
-        val targets = ArrayDeque(listOf("A"))
+        val queue = ArrayDeque<Pair<String, Ranges>>()
 
-        while (targets.isNotEmpty()) {
-        val target = targets.removeFirst()
-
-        if (criteria[target] != null) {
-        continue
-        }
-
-        val rules = rulesToTarget(workflows, target)
-        rules.second.map { it.key }.filterNot { it in targets }.forEach { targets.add(it) }
-        criteria[target] = rules.second
-        }
-
-        val source = "in"
-        var paths = criteria["A"]!!.map { listOf(it.key, "A") }
-        while (paths.any { it.first() != source }) {
-        paths = paths.map { criteria[it.first()]!!.map { it.key } + it }
-        }
-        paths = paths.distinct()
-
-        val pathRules: List<List<PartRule>> = paths.map { path ->
-        path.zipWithNext().flatMap { step ->
-        val workflowRules = workflows[step.first]!!.rules
-        val rule = workflowRules.first { it.target() == step.second }
-        if (rule.isFallback()) {
-        workflowRules.filterNot { it.isFallback() }.map { it.invert() as PartRule }
-        } else {
-        listOf(rule as PartRule)
-        }
-        }
-        }
-
-
-        val ranges = pathRules.map {
-        var ranges = mapOf(
-        "x" to 1..4000,
-        "m" to 1..4000,
-        "a" to 1..4000,
-        "s" to 1..4000
+        // start at 'in' with max range (1..4000) for each category
+        queue += "in" to Ranges(
+            mapOf(
+                "x" to 1..4000,
+                "a" to 1..4000,
+                "m" to 1..4000,
+                "s" to 1..4000
+            )
         )
-        it.forEach {
-        ranges = it.restrict(ranges)
-        }
-        ranges
+
+        var result = 0L
+
+        while (queue.isNotEmpty()) {
+            val (name, range) = queue.removeFirst()
+            val workflow = workflows[name]!!
+
+            val outcomes = workflow.evaluate(range)
+            for ((outcomeName, outcomRange) in outcomes) {
+
+                // bad end -> ignore values
+                if (outcomeName == "R") continue
+
+                // finish here and add number of possibilities to result
+                if (outcomeName == "A") {
+                    result += outcomRange.numberOfPossibilities
+                    continue
+                }
+
+                // target not reached -> add to queue
+                queue += outcomeName to outcomRange
+            }
         }
 
-        val possibilities = ranges.map {
-        it.values
-        .map { it.count() }
-        .map { it.toBigInteger() }
-        .reduce { acc, i -> acc * i }
-        }
-         **/
-        return 0.toBigInteger()// possibilities.sumOf { it }
+        return result
     }
-
-    private fun rulesToTarget(workflows: Map<String, Workflow>, target: String) =
-        target to workflows.entries.associate {
-            val targetRules = it.value.rules.filter { it.target == target }
-            it.key to targetRules
-        }.filter { it.value.isNotEmpty() }
 
     private fun parseInput(input: String): Pair<Map<String, Workflow>, List<Part>> {
         val (workflowInput, partsInput) = input.split("\n\n")
@@ -103,7 +75,7 @@ data class DayNineteen(val input: String) : Day<BigInteger> {
     data class Part(val values: Map<String, Int>) {
 
         // direct map like access to values
-        operator fun get(name: String): Int = values[name] ?: error("Invalid name: $name")
+        operator fun get(name: String): Int = values[name]!!
 
         companion object {
             operator fun invoke(row: String): Part =
@@ -116,55 +88,24 @@ data class DayNineteen(val input: String) : Day<BigInteger> {
         }
     }
 
-    data class Rule(
-        val input: String,
-        val target: String,
-        val condition: Condition?
-    ) {
+    data class Ranges(val ranges: Map<String, IntRange>) {
 
-        companion object {
-            operator fun invoke(input: String): Rule {
-                if (!input.contains(':')) {
-                    return Rule(input = input, target = input, condition = null)
-                }
+        // map like direct access to ranges
+        operator fun get(name: String): IntRange = ranges[name]!!
 
-                val (operation, target) = input.split(':')
-                val (conditional, operator, conditionValue) = operation.splitWithDelimiter("<", ">")
-                val condition = Condition(
-                    conditional = conditional,
-                    operator = operator,
-                    conditionValue = conditionValue.toInt()
-                )
-                return Rule(input, target, condition)
+        val numberOfPossibilities: Long
+            get() {
+                return ranges.values
+                    .map { range -> max(0, range.last - range.first + 1).toLong() }
+                    .reduce { acc, l -> acc * l }
             }
-
-
-        }
-
-        fun evaluate(part: Part): String? {
-            val condition = this.condition
-            return if (condition != null && condition.evaluate(part)) {
-                target
-            } else if (condition == null) {
-                target
-            } else {
-                null
-            }
-        }
-
-        fun evaluate(part: PartRange): Pair<Pair<String, PartRange>, PartRange> {
-            val condition = this.condition
-            return if (condition != null) {
-                val (targetRange, remainingRange) = condition.evaluate(part)
-                (target to targetRange) to remainingRange
-            } else {
-                (target to part) to part
-            }
-        }
-
     }
 
 
+    /**
+     * A workflow consists of a set of rules and a unique name.
+     * Each rule applies to one category.
+     */
     data class Workflow(val name: String, val rules: List<Rule>) {
         companion object {
             operator fun invoke(row: String): Workflow {
@@ -174,57 +115,116 @@ data class DayNineteen(val input: String) : Day<BigInteger> {
             }
         }
 
-
-    }
-
-    data class PartRange(val ranges: Map<String, IntRange>) {
-        operator fun get(name: String): IntRange = ranges[name] ?: error("Invalid name: $name")
+        /**
+         * @return the target name for the Part when places into the Workflow
+         */
+        fun evaluate(part: Part): String = rules.firstNotNullOf { it.evaluate(part) }
 
         /**
-         * Total size of this part range
+         * @return list of possible targets with the respective ranges
          */
-        /** val totalSize: Long
-        get() {
-        return ranges.values.productOf { range ->
-        max(0, range.last - range.first + 1).toLong()
+        fun evaluate(ranges: Ranges): List<Pair<String, Ranges>> {
+            val result = mutableListOf<Pair<String, Ranges>>()
+            var range = ranges
+            for (rule in rules) {
+                val (targetToMatchingRange, inverseRange) = rule.evaluate(range)
+                result += targetToMatchingRange
+                range = inverseRange // use inverse range here for other rules
+            }
+            return result
         }
-        }**/
     }
 
+    /**
+     * A rule consisting of a optional condition and the target property
+     */
+    data class Rule(val target: String, val condition: Condition?) {
 
-    data class Condition(
-        val conditional: String,
-        val operator: String,
-        val conditionValue: Int
-    ) {
+        companion object {
+            operator fun invoke(input: String): Rule {
+                if (!input.contains(':')) {
+                    // fallback rule without condition
+                    return Rule(target = input, condition = null)
+                }
+
+                val (operation, target) = input.split(':')
+                val (category, operator, value) = operation.splitWithDelimiter("<", ">")
+                val condition = Condition(category, operator, value.toInt())
+                return Rule(target, condition)
+            }
+        }
+
+        /**
+         * @return target name if the rule is satisfied, null otherwise
+         */
+        fun evaluate(part: Part): String? {
+            if (condition == null) {
+                // fallback rule is always true
+                return target
+            }
+            return if (condition.evaluate(part)) target else null
+        }
+
+        /**
+         * Evaluate rule for part ranges
+         * @return Pair:
+         * First is target and the range
+         * which is required to reach the target as the pair target name to range.
+         * Second is the inverse range which remains when the rule is not satisfied.
+         */
+        fun evaluate(ranges: Ranges): Pair<Pair<String, Ranges>, Ranges> {
+            if (condition == null) {
+                // fallback rule does not apply any restriction to ranges
+                return (target to ranges) to ranges
+            }
+
+            val (targetRange, remainingRange) = condition.evaluate(ranges)
+            return (target to targetRange) to remainingRange
+        }
+
+    }
+
+    /**
+     * Condition for a 'category' in the form of 'value' 'operator' 'conditionValue', e.g. value < 45
+     */
+    data class Condition(val category: String, val operator: String, val conditionValue: Int) {
+
+        /**
+         * @return true if the condition is satisfied
+         */
         fun evaluate(part: Part): Boolean {
-            val value = part[conditional]
+            val value = part[category]
             return when (operator) {
                 "<" -> value < conditionValue
                 ">" -> value > conditionValue
-                else -> error("Invalid operator: $operator")
+                else -> error("could not evaluate: $operator")
             }
         }
 
         /**
-         * Returns the matching range and remaining range after applying the condition.
-         * The remaining range may be applied to subsequent rules in a workflow.
+         * Restrict ranges for the part based on the condition
+         *
+         * @return pair of ranges:
+         * first is the matching range (condition is satisfied),
+         * second ist the inverse range (condition is not satisfied)
          */
-        fun evaluate(partRange: PartRange): Pair<PartRange, PartRange> {
-            val range = partRange[conditional]
-            val (matchingRange, remainingRange) = when (operator) {
-                "<" ->
-                    range.start..min(conditionValue - 1, range.endInclusive) to
-                            max(range.start, conditionValue)..range.endInclusive
+        fun evaluate(ranges: Ranges): Pair<Ranges, Ranges> {
+            val range = ranges[category]
 
-                ">" -> max(conditionValue + 1, range.start)..range.endInclusive to
-                        range.start..min(range.endInclusive, conditionValue)
+            val (matchingRange, inverseRange) = when (operator) {
+                "<" -> range.first..min(conditionValue - 1, range.last) to
+                        max(range.first, conditionValue)..range.last
 
-                else -> error("Invalid operator: $operator")
+                ">" -> max(conditionValue + 1, range.first)..range.last to
+                        range.first..min(range.last, conditionValue)
+
+                else -> error("could not evaluate: $operator")
             }
-            return PartRange(partRange.ranges + (conditional to matchingRange)) to
-                    PartRange(partRange.ranges + (conditional to remainingRange))
+
+            val matchingRanges = Ranges(ranges.ranges + (category to matchingRange))
+            val inverseRanges = Ranges(ranges.ranges + (category to inverseRange))
+
+            return matchingRanges to inverseRanges
         }
     }
-
 }

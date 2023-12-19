@@ -29,7 +29,7 @@ class DayNineteenTest {
     @Test
     fun partOne() {
         val result = DayNineteen(input).partOne()
-        Assertions.assertEquals(19114.toBigInteger(), result)
+        Assertions.assertEquals(19114L, result)
     }
 
     @Test
