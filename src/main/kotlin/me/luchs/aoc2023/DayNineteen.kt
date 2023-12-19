@@ -12,8 +12,9 @@ data class DayNineteen(val input: String) : Day<Long> {
             .associateWith { part ->
                 var target = "in"
                 var workflow = workflows[target]
+                // go through workflow until target is reached
                 while (workflow != null) {
-                    target = workflow.evaluate(part)
+                    target = workflow.evaluatePart(part)
                     workflow = workflows[target]
                 }
                 target
@@ -44,21 +45,20 @@ data class DayNineteen(val input: String) : Day<Long> {
         while (queue.isNotEmpty()) {
             val (name, range) = queue.removeFirst()
             val workflow = workflows[name]!!
-
-            val outcomes = workflow.evaluate(range)
-            for ((outcomeName, outcomRange) in outcomes) {
+            val outcomes = workflow.evaluateRanges(range)
+            for ((outcomeName, outcomeRange) in outcomes) {
 
                 // bad end -> ignore values
                 if (outcomeName == "R") continue
 
                 // finish here and add number of possibilities to result
                 if (outcomeName == "A") {
-                    result += outcomRange.numberOfPossibilities
+                    result += outcomeRange.numberOfPossibilities
                     continue
                 }
 
                 // target not reached -> add to queue
-                queue += outcomeName to outcomRange
+                queue += outcomeName to outcomeRange
             }
         }
 
@@ -118,16 +118,16 @@ data class DayNineteen(val input: String) : Day<Long> {
         /**
          * @return the target name for the Part when places into the Workflow
          */
-        fun evaluate(part: Part): String = rules.firstNotNullOf { it.evaluate(part) }
+        fun evaluatePart(part: Part): String = rules.firstNotNullOf { it.evaluatePart(part) }
 
         /**
          * @return list of possible targets with the respective ranges
          */
-        fun evaluate(ranges: Ranges): List<Pair<String, Ranges>> {
+        fun evaluateRanges(ranges: Ranges): List<Pair<String, Ranges>> {
             val result = mutableListOf<Pair<String, Ranges>>()
             var range = ranges
             for (rule in rules) {
-                val (targetToMatchingRange, inverseRange) = rule.evaluate(range)
+                val (targetToMatchingRange, inverseRange) = rule.evaluateRanges(range)
                 result += targetToMatchingRange
                 range = inverseRange // use inverse range here for other rules
             }
@@ -157,12 +157,12 @@ data class DayNineteen(val input: String) : Day<Long> {
         /**
          * @return target name if the rule is satisfied, null otherwise
          */
-        fun evaluate(part: Part): String? {
+        fun evaluatePart(part: Part): String? {
             if (condition == null) {
                 // fallback rule is always true
                 return target
             }
-            return if (condition.evaluate(part)) target else null
+            return if (condition.evaluatePart(part)) target else null
         }
 
         /**
@@ -172,13 +172,13 @@ data class DayNineteen(val input: String) : Day<Long> {
          * which is required to reach the target as the pair target name to range.
          * Second is the inverse range which remains when the rule is not satisfied.
          */
-        fun evaluate(ranges: Ranges): Pair<Pair<String, Ranges>, Ranges> {
+        fun evaluateRanges(ranges: Ranges): Pair<Pair<String, Ranges>, Ranges> {
             if (condition == null) {
                 // fallback rule does not apply any restriction to ranges
                 return (target to ranges) to ranges
             }
 
-            val (targetRange, remainingRange) = condition.evaluate(ranges)
+            val (targetRange, remainingRange) = condition.evaluateRanges(ranges)
             return (target to targetRange) to remainingRange
         }
 
@@ -192,7 +192,7 @@ data class DayNineteen(val input: String) : Day<Long> {
         /**
          * @return true if the condition is satisfied
          */
-        fun evaluate(part: Part): Boolean {
+        fun evaluatePart(part: Part): Boolean {
             val value = part[category]
             return when (operator) {
                 "<" -> value < conditionValue
@@ -208,7 +208,7 @@ data class DayNineteen(val input: String) : Day<Long> {
          * first is the matching range (condition is satisfied),
          * second ist the inverse range (condition is not satisfied)
          */
-        fun evaluate(ranges: Ranges): Pair<Ranges, Ranges> {
+        fun evaluateRanges(ranges: Ranges): Pair<Ranges, Ranges> {
             val range = ranges[category]
 
             val (matchingRange, inverseRange) = when (operator) {
