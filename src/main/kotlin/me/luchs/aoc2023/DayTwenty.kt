@@ -60,15 +60,9 @@ data class DayTwenty(val input: String) : Day<Long> {
         return nodes.values.lcm()
     }
 
-    private fun modulesFromInput(): List<Module> = input.lines()
-        .map {
-            when {
-                it.startsWith("broadcaster") -> Broadcaster(it)
-                it.startsWith("%") -> FlipFlop(it)
-                it.startsWith("&") -> Conjunction(it)
-                else -> throw IllegalStateException("Can not process $it")
-            }
-        }
+    private fun modulesFromInput(): List<Module> = input
+        .lines()
+        .map { Module(it) }
         .registerConjunctionSources()
 
     private fun List<Module>.registerConjunctionSources(): List<Module> {
@@ -102,6 +96,15 @@ data class DayTwenty(val input: String) : Day<Long> {
         val name: String
         val destinations: List<String>
         fun process(pulse: Pulse): List<Pulse>
+
+        companion object {
+            operator fun invoke(row: String): Module = when {
+                row.startsWith("broadcaster") -> Broadcaster(row)
+                row.startsWith("%") -> FlipFlop(row)
+                row.startsWith("&") -> Conjunction(row)
+                else -> throw IllegalStateException("Can not process $row")
+            }
+        }
     }
 
     private data class FlipFlop(
