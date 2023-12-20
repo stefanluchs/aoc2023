@@ -19,3 +19,6 @@ fun lcm(left: Long, right: Long): Long {
     }
     return maxLcm
 }
+
+fun Iterable<Long>.lcm(): Long = this.reduce { acc, l -> lcm(acc, l) }
+

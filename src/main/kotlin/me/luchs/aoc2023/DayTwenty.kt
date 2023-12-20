@@ -2,21 +2,19 @@ package me.luchs.aoc2023
 
 data class DayTwenty(val input: String) : Day<Long> {
 
+    private val button = Pulse(value = false, source = "button", destination = "broadcaster")
+
     override fun partOne(): Long {
 
-        val modules = parseInput()
-        modules.registerConjunctionSources()
+        val modules = modulesFromInput()
 
         var countLow = 0L
         var countHigh = 0L
 
-        repeat(1000) {
-            val queue = ArrayDeque<Pulse>()
-            queue.add(Button().pulse())
-
+        repeat(times = 1000) {
+            val queue = ArrayDeque(listOf(button))
             while (queue.isNotEmpty()) {
                 val pulse = queue.removeFirst()
-                println(pulse)
 
                 if (pulse.value) {
                     countHigh++
@@ -24,11 +22,7 @@ data class DayTwenty(val input: String) : Day<Long> {
                     countLow++
                 }
 
-                val results = modules
-                    .filter { pulse.destination == it.name }
-                    .flatMap { it.process(pulse) }
-
-                queue.addAll(results)
+                modules.process(pulse, queue)
             }
         }
 
@@ -36,10 +30,37 @@ data class DayTwenty(val input: String) : Day<Long> {
     }
 
     override fun partTwo(): Long {
-        TODO("Not yet implemented")
+
+        val modules = modulesFromInput()
+
+        // nodes that have destination "zh" which is the only node to have destination "rx"
+        // "zh" is a conjunction node -> all incoming pulses need
+        // to be high in order for it to emmit a low pulse to "rx"
+
+        // determine the lcm of iterations for the four independent cycles
+        // in which these result in a high pulse respectively
+        val nodes = mutableMapOf("ks" to 0L, "kb" to 0L, "sx" to 0L, "jt" to 0L)
+
+        var index = 0L
+        while (nodes.values.any { it == 0L }) {
+            index++
+
+            val queue = ArrayDeque(listOf(button))
+            while (queue.isNotEmpty()) {
+                val pulse = queue.removeFirst()
+
+                if (pulse.source in nodes && pulse.value) {
+                    nodes[pulse.source] = index
+                }
+
+                modules.process(pulse, queue)
+            }
+        }
+
+        return nodes.values.lcm()
     }
 
-    fun parseInput(): List<Module> = input.lines()
+    private fun modulesFromInput(): List<Module> = input.lines()
         .map {
             when {
                 it.startsWith("broadcaster") -> Broadcaster(it)
@@ -48,35 +69,42 @@ data class DayTwenty(val input: String) : Day<Long> {
                 else -> throw IllegalStateException("Can not process $it")
             }
         }
+        .registerConjunctionSources()
 
-    private fun List<Module>.registerConjunctionSources() {
+    private fun List<Module>.registerConjunctionSources(): List<Module> {
         val conjunctions = this.filterIsInstance<Conjunction>()
         conjunctions.forEach { conjunction ->
             this.filter { conjunction.name in it.destinations }
                 .map { it.name }
                 .forEach { conjunction.registerInput(it) }
         }
+        return this
     }
 
+    private fun List<Module>.process(pulse: Pulse, queue: ArrayDeque<Pulse>) = this
+        .filter { pulse.destination == it.name }
+        .flatMap { it.process(pulse) }
+        .let { queue.addAll(it) }
 
-    data class Pulse(
+    private data class Pulse(
         val value: Boolean = true,
         val source: String,
         val destination: String
     ) {
+        // for command line visualization of the pluses
         override fun toString(): String {
             val pulse = if (value) "high" else "low"
             return "$source -$pulse-> $destination"
         }
     }
 
-    sealed interface Module {
+    private sealed interface Module {
         val name: String
         val destinations: List<String>
         fun process(pulse: Pulse): List<Pulse>
     }
 
-    data class FlipFlop(
+    private data class FlipFlop(
         override val name: String,
         override val destinations: List<String>,
         var on: Boolean = false
@@ -97,10 +125,9 @@ data class DayTwenty(val input: String) : Day<Long> {
                 on = !on
                 destinations.map { Pulse(on, name, it) }
             }
-
     }
 
-    data class Conjunction(
+    private data class Conjunction(
         override val name: String,
         override val destinations: List<String>,
         var last: MutableMap<String, Boolean> = mutableMapOf()
@@ -123,10 +150,9 @@ data class DayTwenty(val input: String) : Day<Long> {
             val value = !last.all { it.value }
             return destinations.map { Pulse(value, name, it) }
         }
-
     }
 
-    data class Broadcaster(
+    private data class Broadcaster(
         override val name: String,
         override val destinations: List<String>
     ) : Module {
@@ -141,10 +167,6 @@ data class DayTwenty(val input: String) : Day<Long> {
 
         override fun process(pulse: Pulse): List<Pulse> =
             destinations.map { Pulse(pulse.value, name, it) }
-    }
-
-    class Button {
-        fun pulse(): Pulse = Pulse(value = false, source = "button", destination = "broadcaster")
     }
 
 }

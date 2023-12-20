@@ -34,10 +34,4 @@ class DayTwentyTest {
         Assertions.assertEquals(11687500L, result)
     }
 
-    @Test
-    fun partTwo() {
-        val result = DayTwenty(example1).partTwo()
-        //Assertions.assertEquals(167409079868000, result)
-    }
-
 }
