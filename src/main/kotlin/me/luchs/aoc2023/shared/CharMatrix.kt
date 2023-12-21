@@ -2,6 +2,14 @@ package me.luchs.aoc2023.shared
 
 data class CharMatrix(val nodes: MutableMap<Coordinate, Char> = mutableMapOf()) {
 
+    var minColumn = 0
+    var maxColumn = 0
+    var minRow = 0
+    var maxRow = 0
+
+    val dimensions: Dimensions
+        get() = maxColumn + 1 to maxRow + 1
+
     operator fun get(coordinate: Coordinate): Char? = nodes[coordinate]
 
     operator fun get(value: Char): List<Coordinate> =
@@ -21,20 +29,21 @@ data class CharMatrix(val nodes: MutableMap<Coordinate, Char> = mutableMapOf()) 
         }
     }
 
-    var minColumn = 0
-    var maxColumn = 0
-    var minRow = 0
-    var maxRow = 0
+    init {
+        this.updateDimensions()
+    }
 
     fun add(value: Pair<Coordinate, Char>): CharMatrix {
         this.nodes[value.first] = value.second
+        this.updateDimensions()
+        return this
+    }
 
+    private fun updateDimensions() {
         minRow = minRow()
         maxRow = maxRow()
         minColumn = minColumn()
         maxColumn = maxColumn()
-
-        return this
     }
 
     fun valueAt(row: Int, column: Int): Char? {
@@ -96,7 +105,6 @@ data class CharMatrix(val nodes: MutableMap<Coordinate, Char> = mutableMapOf()) 
 
 }
 
-
 fun CharMatrix.floodFill(start: Coordinate, value: Char, nullValue: Char = '.') {
 
     val queue = mutableListOf(start)
@@ -125,3 +133,5 @@ fun CharMatrix.floodFill(start: Coordinate, value: Char, nullValue: Char = '.') 
     }
 
 }
+
+typealias Dimensions = Pair<Int, Int>

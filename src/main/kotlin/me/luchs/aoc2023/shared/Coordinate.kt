@@ -56,3 +56,6 @@ data class Coordinate(val row: Int, val column: Int) {
     fun down(range: Int = 1): Coordinate = Coordinate(row + range, column)
 
 }
+
+fun Coordinate.mod(dimensions: Dimensions): Coordinate =
+    Coordinate(this.row.mod(dimensions.first), this.column.mod(dimensions.second))
