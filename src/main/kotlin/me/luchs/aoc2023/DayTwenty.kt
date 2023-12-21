@@ -1,5 +1,7 @@
 package me.luchs.aoc2023
 
+import me.luchs.aoc2023.shared.lcm
+
 data class DayTwenty(val input: String) : Day<Long> {
 
     private val button = Pulse(value = false, source = "button", destination = "broadcaster")

@@ -1,4 +1,4 @@
-package me.luchs.aoc2023
+package me.luchs.aoc2023.shared
 
 /**
  * Calculates the least common multiple (LCM) of two integers.

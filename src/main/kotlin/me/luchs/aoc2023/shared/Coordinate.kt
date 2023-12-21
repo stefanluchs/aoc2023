@@ -1,5 +1,7 @@
 package me.luchs.aoc2023.shared
 
+import kotlin.math.abs
+
 data class Coordinate(val row: Int, val column: Int) {
 
     fun range(direction: Direction, range: Int): List<Coordinate> {
@@ -18,6 +20,10 @@ data class Coordinate(val row: Int, val column: Int) {
             down(),
             up()
         )
+    }
+
+    fun manhattanDistanceTo(other: Coordinate): Int {
+        return abs(this.row - other.row) + abs(this.column - other.column)
     }
 
     fun rightRange(range: Int = 1): List<Coordinate> =

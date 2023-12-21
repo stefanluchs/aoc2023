@@ -1,5 +1,7 @@
 package me.luchs.aoc2023
 
+import me.luchs.aoc2023.shared.lcm
+
 data class DayEight(val input: String) : Day<Long> {
 
     override fun partOne(): Long {

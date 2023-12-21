@@ -1,15 +1,32 @@
 package me.luchs.aoc2023.shared
 
-import me.luchs.aoc2023.DayEighteen
+data class CharMatrix(val nodes: MutableMap<Coordinate, Char> = mutableMapOf()) {
 
-data class StringMatrix(val nodes: MutableMap<Coordinate, String> = mutableMapOf()) {
+    operator fun get(coordinate: Coordinate): Char? = nodes[coordinate]
+
+    operator fun get(value: Char): List<Coordinate> =
+        nodes.entries.filter { it.value == value }.map { it.key }
+
+    companion object {
+        /**
+         * Input must be a String matrix with dimensions n x m
+         * @return Map with all nodes of the matrix as Point
+         */
+        operator fun invoke(input: String): CharMatrix {
+            val nodes = input.lines().mapIndexed { row, content ->
+                content.mapIndexed { column, value -> Coordinate(row, column) to value }
+                    .associate { it.first to it.second }.toMutableMap()
+            }.reduce { acc, map -> (acc + map).toMutableMap() }
+            return CharMatrix(nodes)
+        }
+    }
 
     var minColumn = 0
     var maxColumn = 0
     var minRow = 0
     var maxRow = 0
 
-    fun add(value: Pair<Coordinate, String>): StringMatrix {
+    fun add(value: Pair<Coordinate, Char>): CharMatrix {
         this.nodes[value.first] = value.second
 
         minRow = minRow()
@@ -20,11 +37,11 @@ data class StringMatrix(val nodes: MutableMap<Coordinate, String> = mutableMapOf
         return this
     }
 
-    fun valueAt(row: Int, column: Int): String? {
+    fun valueAt(row: Int, column: Int): Char? {
         return valueAt(Coordinate(row, column))
     }
 
-    fun valueAt(point: Coordinate): String? {
+    fun valueAt(point: Coordinate): Char? {
         return nodes[point]
     }
 
@@ -56,12 +73,12 @@ data class StringMatrix(val nodes: MutableMap<Coordinate, String> = mutableMapOf
         fillBlanks()
         return nodes.entries.groupBy { it.key.row }.entries.sortedBy { it.key }
             .joinToString(separator = "\n") { row ->
-                row.value.sortedBy { it.key.column }.map { it.value.first() }
+                row.value.sortedBy { it.key.column }.map { it.value }
                     .joinToString(separator = "")
             }
     }
 
-    fun fillBlanks(value: String = "."): StringMatrix {
+    fun fillBlanks(value: Char = '.'): CharMatrix {
         columns().forEach { column ->
             rows().forEach { row ->
                 if (valueAt(row, column) == null) nodes[Coordinate(row, column)] = value
@@ -70,10 +87,17 @@ data class StringMatrix(val nodes: MutableMap<Coordinate, String> = mutableMapOf
         return this
     }
 
+    fun adjacent4(coordinate: Coordinate): Map<Coordinate, Char> =
+        coordinate.adjacent4().filterNot { this[it] == null }.associateWith { this[it]!! }
+
+
+    fun adjacent4WithValues(coordinate: Coordinate, vararg value: Char): Map<Coordinate, Char> =
+        coordinate.adjacent4().filter { this[it] in value.toList() }.associateWith { this[it]!! }
+
 }
 
 
-fun StringMatrix.floodFill(start: Coordinate, value: String, nullValue: String = ".") {
+fun CharMatrix.floodFill(start: Coordinate, value: Char, nullValue: Char = '.') {
 
     val queue = mutableListOf(start)
     val visited = mutableListOf<Coordinate>()
