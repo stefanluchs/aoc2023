@@ -14,24 +14,27 @@ data class DayTwentyOne(val input: String) : Day<Long> {
 
     override fun partTwo(): Long {
 
-        val steps = 26501365
+        val iterations = 26501365
 
         val size = matrix.dimensions.first // first == second == 131
 
-        val rest = steps % size
-        val times = steps / size
+        val rest = iterations % size
+        val times = iterations / size
 
         // 26501365 = (times = 202300) * (size = 131) + (rest = 65)
 
-        val value65 = positionsAfter(rest) // 65
-        val value65_131 = positionsAfter(rest + size) // 65 + 131
-        val value65_262 = positionsAfter(rest + (size * 2)) // 65 + 2 * 131
+        // observe steps = i * 131 + 65 for i = 0..2
 
-        // solve value65 + value131 x + value262 x^2 = 202300 for x to find the solution
+        val step0 = positionsAfter(rest) // 65
+        val step1 = positionsAfter(rest + size) // 65 + 131
+        val step2 = positionsAfter(rest + (size * 2)) // 65 + 2 * 131
 
-        fun f(x: Int): Long = value65 * (x - 1) * (x - 2) / 2 +
-                value65_131 * x * (x - 2) / -1 +
-                value65_262 * x * (x - 1) / 2
+        // interpolate quadratic polynomial
+        // https://www.dcode.fr/newton-interpolating-polynomial
+
+        fun f(x: Int): Long = step0 * (x - 1) * (x - 2) / 2 +
+                step1 * x * (x - 2) / -1 +
+                step2 * x * (x - 1) / 2
 
         // 636350496972143
         return f(x = times)
