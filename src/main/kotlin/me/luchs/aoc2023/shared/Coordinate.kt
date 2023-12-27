@@ -4,6 +4,8 @@ import kotlin.math.abs
 
 data class Coordinate(val row: Int, val column: Int) {
 
+
+
     fun range(direction: Direction, range: Int): List<Coordinate> {
         return when (direction) {
             Direction.UP -> upRange(range)
@@ -54,6 +56,10 @@ data class Coordinate(val row: Int, val column: Int) {
     fun up(range: Int = 1): Coordinate = Coordinate(row - range, column)
 
     fun down(range: Int = 1): Coordinate = Coordinate(row + range, column)
+
+    override fun toString(): String {
+        return "($row, $column)"
+    }
 
 }
 
