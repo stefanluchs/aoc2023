@@ -55,11 +55,10 @@ data class DayTwentyOne(val input: String) : Day<Long> {
 
                     visited.add(position)
 
-                    val neighbours = position.adjacent4()
+                    position.adjacent4()
                         .distinct()
                         .filterNot { matrix[it.mod(dimensions)] == '#' }
-
-                    neighbours.forEach { add(it) }
+                        .forEach { add(it) }
 
                 }
             }
