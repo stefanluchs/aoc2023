@@ -11,15 +11,32 @@ val number = AtomicInteger()
 
 data class DayTwentyTwo(val input: String) : Day<Int> {
 
+    private val bricks = input.lines().map { Brick(it) }
 
     override fun partOne(): Int {
-        val bricks = input.lines().map { Brick(it) }
+        val (_, map) = bricks.settle()
+        val unsafe = map.unsafeBricks()
+        return bricks.size - unsafe.size
+    }
 
+    override fun partTwo(): Int {
+        val (settled, map) = bricks.settle()
+        return map.unsafeBricks().sumOf { settled.countFallingWithout(it) }
+    }
+
+    private fun Iterable<Brick>.countFallingWithout(brick: Brick): Int {
+        val bricks = this.toMutableList()
+        bricks.remove(brick)
+        val (_, _, count) = bricks.settle()
+        return count
+    }
+
+    private fun Iterable<Brick>.settle(): Triple<List<Brick>, Map<Brick, List<Brick>>, Int> {
         val settled = mutableListOf<Brick>()
-        val queue = bricks.sortedBy { it.minZ() }.toMutableList()
-
         val map = mutableMapOf<Brick, List<Brick>>()
+        val falling = mutableSetOf<Int>()
 
+        val queue = this.sortedBy { it.minZ() }.toMutableList()
         while (queue.isNotEmpty()) {
             val brick = queue.removeFirst()
             val below = brick.isOnOtherBrick(settled)
@@ -30,22 +47,18 @@ data class DayTwentyTwo(val input: String) : Day<Int> {
             } else {
                 println("Move brick $brick down")
                 queue.addFirst(brick.moveDown())
+                falling.add(brick.id)
             }
         }
 
-        val rows = settled.groupBy { it.minZ() }
-
-        val unsafe = map.entries
-            .filter { it.value.size < 2 }
-            .flatMap { it.value }
-            .distinct()
-
-        return bricks.size - unsafe.size
+        return Triple(settled, map, falling.size)
     }
 
-    override fun partTwo(): Int {
-        TODO("Not yet implemented")
-    }
+    private fun Map<Brick, List<Brick>>.unsafeBricks(): List<Brick> = this.entries
+        .filter { it.value.size < 2 }
+        .flatMap { it.value }
+        .distinct()
+
 
     data class Brick(val id: Int, val start: Coordinate3D, val end: Coordinate3D) {
         companion object {
