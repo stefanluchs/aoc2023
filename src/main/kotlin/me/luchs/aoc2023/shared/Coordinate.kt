@@ -4,7 +4,8 @@ import kotlin.math.abs
 
 data class Coordinate(val row: Int, val column: Int) {
 
-
+    val x: Int get() = row
+    val y: Int get() = column
 
     fun range(direction: Direction, range: Int): List<Coordinate> {
         return when (direction) {
