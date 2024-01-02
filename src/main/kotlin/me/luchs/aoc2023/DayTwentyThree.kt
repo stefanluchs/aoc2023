@@ -2,7 +2,6 @@ package me.luchs.aoc2023
 
 import me.luchs.aoc2023.shared.CharMatrix
 import me.luchs.aoc2023.shared.Coordinate
-import me.luchs.aoc2023.shared.distinctPairs
 import kotlin.math.max
 
 data class DayTwentyThree(val input: String) : Day<Int> {
@@ -13,173 +12,135 @@ data class DayTwentyThree(val input: String) : Day<Int> {
 
     override fun partOne(): Int {
 
-        val legs = buildLegs()
+        val graph = buildGraph(
+            addResult = { legStartNode, nodes -> add(Leg(legStartNode.first, nodes)) },
+            process = { visited, nodes, queue ->
+                forEach {
+                    if (it.value.isSlope()) {
 
-        val graph = buildGraph(legs)
-
-        return findMaxSteps(graph, start, target)
-    }
-
-    private fun buildLegs(): List<Leg> {
-        val intersections = mutableSetOf<Coordinate>()
-        val legStartNodes = mutableListOf(start to start.down())
-
-        val legs = buildList {
-            while (legStartNodes.isNotEmpty()) {
-
-                val legStartNode = legStartNodes.removeFirst()
-                val visited = mutableListOf(legStartNode.first)
-
-                val nodes = mutableListOf<Coordinate>()
-                val queue = mutableListOf(legStartNode.second)
-
-                while (queue.isNotEmpty()) {
-
-                    val position = queue.removeFirst()
-
-                    if (position in nodes) {
-                        continue
-                    }
-
-                    visited += position
-                    nodes += position
-
-                    if (position == target) {
-                        // dead end at target -> finish leg
-                        break
-                    }
-
-                    if (position in intersections) {
-                        break
-                    }
-
-                    val neighbours = map.adjacent4(position)
-                        .filterNot { it.value == '#' }
-                        .filterNot { it.key in visited }
-
-                    if (neighbours.size > 1 && position !in intersections) {
-                        // intersection -> finish leg and add new leg start nodes
-                        legStartNodes.addAll(neighbours.keys.map { position to it })
-                        intersections += position
-                        break
-                    }
-
-                    if (neighbours.isEmpty()) {
-                        // dead end at target -> finish leg
-                        break
-                    }
-
-                    neighbours.forEach {
-                        if (it.value.isSlope()) {
-
-                            val next = when (it.value) {
-                                '^' -> it.key.up()
-                                '>' -> it.key.right()
-                                'v' -> it.key.down()
-                                '<' -> it.key.left()
-                                else -> throw IllegalArgumentException("Can not process slope ${it.value}")
-                            }
-                            val value = map[next]
-
-                            if (value != null && value != '#' && next !in visited) {
-                                visited += it.key
-                                nodes += it.key
-                                queue.addFirst(next)
-                            }
-                        } else {
-                            queue.addFirst(it.key)
+                        val next = when (it.value) {
+                            '^' -> it.key.up()
+                            '>' -> it.key.right()
+                            'v' -> it.key.down()
+                            '<' -> it.key.left()
+                            else -> throw IllegalArgumentException("Can not process slope ${it.value}")
                         }
-                    }
-                }
+                        val value = map[next]
 
-                add(Leg(legStartNode.first, nodes))
-
-            }
-        }
-        return legs
-    }
-
-    override fun partTwo(): Int {
-        val intersections = mutableSetOf<Coordinate>()
-
-        val legStartNodes = mutableListOf(start to start.down())
-
-        val legs = buildList {
-            while (legStartNodes.isNotEmpty()) {
-
-                val legStartNode = legStartNodes.removeFirst()
-                val visited = mutableListOf(legStartNode.first)
-
-                val nodes = mutableListOf<Coordinate>()
-                val queue = mutableListOf(legStartNode.second)
-
-                while (queue.isNotEmpty()) {
-
-                    val position = queue.removeFirst()
-
-                    if (position in nodes) {
-                        continue
-                    }
-
-                    visited += position
-                    nodes += position
-
-                    if (position == target) {
-                        // dead end at target -> finish leg
-                        break
-                    }
-
-                    if (position in intersections) {
-                        break
-                    }
-
-                    val neighbours = map.adjacent4(position)
-                        .filterNot { it.value == '#' }
-                        .filterNot { it.key in visited }
-
-                    if (neighbours.size > 1 && position !in intersections) {
-                        // intersection -> finish leg and add new leg start nodes
-                        legStartNodes.addAll(neighbours.keys.map { position to it })
-                        intersections += position
-                        break
-                    }
-
-                    if (neighbours.isEmpty()) {
-                        // dead end at target -> finish leg
-                        break
-                    }
-
-                    neighbours.forEach {
+                        if (value != null && value != '#' && next !in visited) {
+                            visited += it.key
+                            nodes += it.key
+                            queue.addFirst(next)
+                        }
+                    } else {
                         queue.addFirst(it.key)
                     }
                 }
-
-                add(Leg(legStartNode.first, nodes, invert = false))
-                add(Leg(legStartNode.first, nodes, invert = true))
-
             }
-        }
-
-        val graph = buildGraph(legs)
+        )
 
         return findMaxSteps(graph, start, target)
     }
 
-    private fun buildGraph(legs: List<Leg>): Map<Coordinate, Set<Pair<Coordinate, Int>>> {
+    override fun partTwo(): Int {
+
+        val graph = buildGraph(
+            addResult = { legStartNode, nodes ->
+                add(Leg(legStartNode.first, nodes, invert = false))
+                add(Leg(legStartNode.first, nodes, invert = true))
+            },
+            process = { _, _, queue ->
+                forEach { queue.addFirst(it.key) }
+            }
+        )
+
+        return findMaxSteps(graph, start, target)
+    }
+
+    private fun buildGraph(
+        addResult: MutableList<Leg>.(
+            legStartNode: Pair<Coordinate, Coordinate>,
+            nodes: MutableList<Coordinate>
+        ) -> Unit,
+        process: Map<Coordinate, Char>.(
+            visited: MutableList<Coordinate>,
+            nodes: MutableList<Coordinate>,
+            queue: MutableList<Coordinate>
+        ) -> Unit
+    ): Map<Coordinate, Set<Pair<Coordinate, Int>>> {
+
+        val intersections = mutableSetOf<Coordinate>()
+        val legStartNodes = mutableListOf(start to start.down())
+
+        val legs = buildList {
+            while (legStartNodes.isNotEmpty()) {
+
+                val legStartNode = legStartNodes.removeFirst()
+                val visited = mutableListOf(legStartNode.first)
+
+                val nodes = mutableListOf<Coordinate>()
+                val queue = mutableListOf(legStartNode.second)
+
+                while (queue.isNotEmpty()) {
+
+                    val position = queue.removeFirst()
+
+                    if (position in nodes) {
+                        continue
+                    }
+
+                    visited += position
+                    nodes += position
+
+                    if (position == target) {
+                        // dead end at target -> finish leg
+                        break
+                    }
+
+                    if (position in intersections) {
+                        break
+                    }
+
+                    val neighbours = map.adjacent4(position)
+                        .filterNot { it.value == '#' }
+                        .filterNot { it.key in visited }
+
+                    if (neighbours.size > 1 && position !in intersections) {
+                        // intersection -> finish leg and add new leg start nodes
+                        legStartNodes.addAll(neighbours.keys.map { position to it })
+                        intersections += position
+                        break
+                    }
+
+                    if (neighbours.isEmpty()) {
+                        // dead end at target -> finish leg
+                        break
+                    }
+
+                    neighbours.process(visited, nodes, queue)
+
+                }
+
+                addResult(legStartNode, nodes)
+
+            }
+        }
+
         return legs
             .groupBy { it.from }
             .map { it.key to it.value.map { it.to to it.length }.toSet() }
             .associate { it.first to it.second }
     }
 
+
     private fun findMaxSteps(
         graph: Map<Coordinate, Set<Pair<Coordinate, Int>>>,
         current: Coordinate,
-        to: Coordinate,
+        target: Coordinate,
         seen: MutableMap<Coordinate, Boolean> = mutableMapOf()
     ): Int {
 
-        if (current == to) {
+        if (current == target) {
             // Found destination
             return 0
         } else if (seen[current] == true) {
@@ -192,7 +153,7 @@ data class DayTwentyThree(val input: String) : Day<Int> {
         var maxSteps = -1
 
         for ((neighbour, length) in graph[current] ?: emptyList()) {
-            val steps = findMaxSteps(graph, neighbour, to, seen)
+            val steps = findMaxSteps(graph, neighbour, target, seen)
             if (steps >= 0) {
                 maxSteps = max(maxSteps, steps + length)
             }
