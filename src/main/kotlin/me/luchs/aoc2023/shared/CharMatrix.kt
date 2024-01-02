@@ -12,6 +12,10 @@ data class CharMatrix(val nodes: MutableMap<Coordinate, Char> = mutableMapOf()) 
 
     operator fun get(coordinate: Coordinate): Char? = nodes[coordinate]
 
+    operator fun set(coordinate: Coordinate, value: Char) {
+        nodes[coordinate] = value
+    }
+
     operator fun get(value: Char): List<Coordinate> =
         nodes.entries.filter { it.value == value }.map { it.key }
 
