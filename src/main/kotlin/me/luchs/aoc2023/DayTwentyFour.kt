@@ -1,14 +1,15 @@
 package me.luchs.aoc2023
 
+import Jama.Matrix
 import me.luchs.aoc2023.shared.distinctPairs
+import kotlin.math.roundToLong
 
-
-data class DayTwentyFour(val input: String) : Day<Int> {
+data class DayTwentyFour(val input: String) : Day<Long> {
 
     private val hailstones = input.lines().map { Hailstone(it) }
 
-    override fun partOne(): Int {
-        return numberOfIntersectionsWithin(min = 200000000000000, max = 400000000000000)
+    override fun partOne(): Long {
+        return numberOfIntersectionsWithin(min = 200000000000000, max = 400000000000000).toLong()
     }
 
     fun numberOfIntersectionsWithin(min: Long, max: Long): Int =
@@ -20,11 +21,67 @@ data class DayTwentyFour(val input: String) : Day<Int> {
             }
             .size
 
-    override fun partTwo(): Int {
-        TODO("Not yet implemented")
+    /**
+     * Assume the stone we shoot starts at a, b, c @ d, e, f
+     * If we look at the world from the point of view of the stone, then we are not moving.
+     * All of the hailstones will be aiming to hit us right at the origin.
+     * So transform each hailstone x, y, z @ dx, dy, dz to x-a, y-b, z-c @ dx-d, dy-e, dz-f
+     * If it is going to hit the origin, then the vector from the origin to the starting position has to be
+     * a multiple of its velocity. We only need two dimensions to solve this for a, b, d and e:
+     * (x-a) : (y-b) = (dx-d) : (dy-e)
+     * (x-a) * (dy-e) = (y-b) * (dx-d)
+     * Fill in for two different hailstones x1, y1 @ dx1, dy1 and x2, y2 @ dx2, dy2 and subtract
+     * to get a linear equation for a, b, d and e:
+     * (dy2 - dy1) * a + (dx1 - dx2) * b + (y1 - y2) * d + (x2 - x1) * e = dx1 * y1 - dx2 * y2 + x2 * dy2 - x1 * dy1
+     * Each combination j of hailstorms yields a different equation of the type
+     * cj1 * a + cj2 * b + cj3 * c + cj4 * d = cj5
+     * Take four such equations to form a matrix
+     * ((c11, c12, c13, c14),   (a,  (c51,
+     *  (c21, c22, c23, c24),    b,   c52,
+     *  (c31, c32, c33, c34),    d,   c53,
+     *  (c41, c42, c43, c44)) *  e) = c54)
+     * Or, A * x = b
+     * We can find x by inverting A and computing x = A^-1 * b
+     *
+     * Credit to on https://www.reddit.com/r/adventofcode/comments/18pnycy/comment/kesqnis/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+     */
+    override fun partTwo(): Long {
+
+        val coefficients = hailstones
+            .distinctPairs()
+            .take(4)
+            .map {
+                listOf(
+                    it.second.velocity.y - it.first.velocity.y,
+                    it.first.velocity.x - it.second.velocity.x,
+                    it.first.position.y - it.second.position.y,
+                    it.second.position.x - it.first.position.x
+                ).map { it.toDouble() }.toDoubleArray() to
+                        1.0 * it.first.velocity.x * it.first.position.y - it.second.velocity.x * it.second.position.y +
+                        it.second.position.x * it.second.velocity.y - it.first.position.x * it.first.velocity.y
+            }
+
+        val A = Matrix(coefficients.map { it.first }.toTypedArray())
+        val x = Matrix(coefficients.map { listOf(it.second).toDoubleArray() }.toTypedArray())
+
+        val (a, b, d, _) = A.inverse().times(x).array.map { it[0] }.map { it.roundToLong() }
+
+        val h1 = hailstones.first()
+        val t1 = (a - h1.position.x) / (h1.velocity.x - d)
+
+        val h2 = hailstones[1]
+        val t2 = (a - h2.position.x) / (h2.velocity.x - d)
+
+        val f =
+            ((h1.position.z - h2.position.z) + t1 * h1.velocity.z - t2 * h2.velocity.z) / (t1 - t2)
+        val c = h1.position.z + t1 * (h1.velocity.z - f)
+
+        return a + b + c
+
     }
 
     data class Hailstone(val position: Array<Long>, val velocity: Array<Long>) {
+
         companion object {
             operator fun invoke(row: String): Hailstone {
                 val (position, velocity) = row.split(" @ ")
@@ -32,10 +89,6 @@ data class DayTwentyFour(val input: String) : Day<Int> {
                 return Hailstone(position, velocity)
             }
         }
-
-        fun Array<Long>.x() = this[0]
-
-        fun Array<Long>.y() = this[1]
 
         fun intersectionPoint2D(other: Hailstone): Pair<Double, Double>? {
 
@@ -53,15 +106,15 @@ data class DayTwentyFour(val input: String) : Day<Int> {
             val v2 = other.velocity // Direction of vector 2
 
             val t1: Double =
-                1.0 * (p1.y() * v2.x() + v2.y() * p2.x() - p2.y() * v2.x() - v2.y() * p1.x()) / (v1.x() * v2.y() - v1.y() * v2.x())
+                1.0 * (p1.y * v2.x + v2.y * p2.x - p2.y * v2.x - v2.y * p1.x) / (v1.x * v2.y - v1.y * v2.x)
 
-            val t2: Double = (p1.x() + v1.x() * t1 - p2.x()) / v2.x()
+            val t2: Double = (p1.x + v1.x * t1 - p2.x) / v2.x
 
-            // check if intersection is in the future
+            // check if intersection is in the future for both vectors
             if (t1 < 0 || t2 < 0) return null
 
-            // Use t1 to find the intersection point
-            return p1.x() + t1 * v1.x() to p1.y() + t1 * v1.y()
+            // Use t1 to determine the intersection point
+            return p1.x + t1 * v1.x to p1.y + t1 * v1.y
         }
 
         private fun crossProduct2D(other: Hailstone): Long =
@@ -70,3 +123,12 @@ data class DayTwentyFour(val input: String) : Day<Int> {
     }
 
 }
+
+val Array<Long>.x: Long
+    get() = this[0]
+
+val Array<Long>.y: Long
+    get() = this[1]
+
+val Array<Long>.z: Long
+    get() = this[2]
