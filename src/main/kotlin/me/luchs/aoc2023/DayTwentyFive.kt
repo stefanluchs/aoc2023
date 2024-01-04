@@ -1,55 +1,53 @@
 package me.luchs.aoc2023
 
-import me.luchs.aoc2023.shared.distinctPairs
-import kotlin.time.times
-
 data class DayTwentyFive(val input: String) : Day<Int> {
 
-    val wiring = input.lines().flatMap {
-        val (from, to) = it.split(": ")
+    private val wiring: List<Pair<String, String>> = input.lines().flatMap { row ->
+        val (from, to) = row.split(": ")
         to.split(" ").map { from to it }
     }
 
     override fun partOne(): Int {
 
-        val dot = wiring.map { "${it.first} -- ${it.second}" }.joinToString("\n")
+        // create dot file style console output for visualization in external tool
+        val dot = wiring.joinToString("\n") { "${it.first} -- ${it.second}" }
         println(dot)
 
-        val vertices: Set<String> = wiring.flatMap { setOf(it.first, it.second) }.toSet()
+        val graph = graphFromWiring(wiring)
 
+        // compute minimum cut for graph into two disjunkt graphs
+        // with 3 edges to remove (known from visualization)
+        val (vertices1, vertices2) = graph.minimumCut(edgesToRemove = 3)
+
+        return vertices1.size * vertices2.size
+    }
+
+    private fun graphFromWiring(wiring: List<Pair<String, String>>): Graph<String> {
+        val vertices: Set<String> = wiring.flatMap { setOf(it.first, it.second) }.toSet()
         val edges: Map<String, Set<String>> = vertices.associateWith { node ->
             wiring.filter { it.first == node || it.second == node }
                 .map { if (it.first == node) it.second else it.first }.toSet()
         }
-
-        val graph = Graph(vertices, edges)
-
-        val (_, group1) = minimumCut(graph)
-
-        // https://www.reddit.com/r/adventofcode/comments/18qbsxs/comment/kftp4jr/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-
-        return group1.size * (graph.vertices.size - group1.size)
+        return Graph(vertices, edges)
     }
 
-    // https://github.com/chriswaters78/AdventOfCode2023/blob/main/2023_25/CountCrossings.cs
-    fun minimumCut(
-        graph: Graph<String>,
-        noCrossings: Int = 50,
-        k: Int = 3
-    ): Pair<Int, List<String>> {
+    fun Graph<String>.minimumCut(
+        numberOfCrossings: Int = 50,
+        edgesToRemove: Int
+    ): Pair<Set<String>,Set<String>> {
 
-        var canReach = setOf<String>()
+        var canReach: Set<String>
         val crossingCounts = mutableMapOf<Pair<String, String>, Int>().withDefault { 0 }
 
-        do {
+        do { // while the graph is connected count crossings from one random vertex to others
 
-            repeat(noCrossings) {
+            repeat(numberOfCrossings) {
 
-                var v1 = graph.vertices.random()
-                var v2 = graph.vertices.filter { it != v1 }.random()
+                val v1 = this.vertices.random()
+                val v2 = this.vertices.filter { it != v1 }.random()
 
-                val shortestPathTree = graph.dijkstra(v1)
-                val path = shortestPath(shortestPathTree, v1, v2)
+                val shortestPathMap = this.dijkstra(v1)
+                val path = shortestPath(shortestPathMap, v1, v2)
 
                 for (p in 1..<path.size) {
                     val key = if (path[p - 1].compareTo(path[p]) == -1) path[p - 1] to path[p]
@@ -59,21 +57,25 @@ data class DayTwentyFive(val input: String) : Day<Int> {
 
             }
 
-            val topK = crossingCounts.entries.sortedByDescending { it.value }.take(k)
+            // edges with most crossings
+            val mostCrossedEdges = crossingCounts.entries
+                .sortedByDescending { it.value }
+                .take(edgesToRemove)
+                .map { it.key }
 
-            //remove the 3 edges that we are guessing make the min cut
-
-            var reducedGraph: Graph<String> = graph
-            topK.take(k).forEach {
-                reducedGraph = reducedGraph.remove(it.key)
+            // remove the edges that we are guessing make the min cut
+            var reducedGraph: Graph<String> = this
+            mostCrossedEdges.take(edgesToRemove).forEach {
+                reducedGraph = reducedGraph.remove(edge = it)
             }
 
-            canReach = reducedGraph.canReach(graph.vertices.random())
+            // update the list of nodes that can be reached from a random vertex
+            canReach = reducedGraph.reachableVertices(from = this.vertices.random())
 
-            //canReach = Graph.Reachable(g2, graph.Keys.First());
-        } while (canReach.size == graph.vertices.size);
+        } while (canReach.size == this.vertices.size);
 
-        return k to canReach.toList()
+        // return disjunkt sets of vertices
+        return canReach to this.vertices.minus(canReach)
     }
 
     override fun partTwo(): Int {
@@ -92,59 +94,71 @@ data class Graph<T>(
     fun remove(edge: Pair<T, T>): Graph<T> {
         val reducedEdges = edges.toMutableMap()
 
-        val fromEdges = reducedEdges[edge.first]!!.toMutableSet()
+        val fromEdges = reducedEdges[edge.first]?.toMutableSet() ?: mutableSetOf()
         fromEdges.remove(edge.second)
         reducedEdges[edge.first] = fromEdges.toSet()
 
-        val toEdges = reducedEdges[edge.second]!!.toMutableSet()
+        val toEdges = reducedEdges[edge.second]?.toMutableSet() ?: mutableSetOf()
         toEdges.remove(edge.first)
         reducedEdges[edge.second] = toEdges.toSet()
 
         return Graph(vertices, reducedEdges, weights)
     }
 
-}
-
-fun <T> Graph<T>.canReach(from: T): Set<T> {
-    val shortestPathTree = this.dijkstra(from)
-    return this.vertices.filter {
-        if (from == it) return@filter true
-        val path = shortestPath(shortestPathTree, from, it)
-        path.size > 1
-    }.toSet()
-}
-
-fun <T> Graph<T>.dijkstra(start: T): Map<T, T?> {
-    val S: MutableSet<T> =
-        mutableSetOf() // a subset of vertices, for which we know the true distance
-
-    val delta = this.vertices.map { it to Int.MAX_VALUE }.toMap().toMutableMap()
-    delta[start] = 0
-
-    val previous: MutableMap<T, T?> = this.vertices.associateWith { null }.toMutableMap()
-
-    while (S != this.vertices) {
-        val v: T = delta
-            .filter { !S.contains(it.key) }
-            .minBy { it.value }!!
-            .key
-
-        // node is not connected to start!
-        if (Int.MAX_VALUE == delta.getValue(v)) return previous.toMap()
-
-        this.edges.getValue(v).minus(S).forEach { neighbor ->
-            val newPath = delta.getValue(v) + this.weights.getValue(Pair(v, neighbor))
-
-            if (newPath < delta.getValue(neighbor)) {
-                delta[neighbor] = newPath
-                previous[neighbor] = v
-            }
-        }
-
-        S.add(v)
+    fun reachableVertices(from: T): Set<T> {
+        val shortestPathTree = this.dijkstra(from)
+        return this.vertices.filter {
+            if (from == it) return@filter true
+            val path = shortestPath(shortestPathTree, from, it)
+            path.size > 1
+        }.toSet()
     }
 
-    return previous.toMap()
+    fun dijkstra(start: T): Map<T, T?> {
+
+        val visited: MutableSet<T> = mutableSetOf()
+
+        // map vertex to steps from start
+        val delta = this.vertices.associateWith { Int.MAX_VALUE }.toMutableMap()
+        // start node as minimal distance 0
+        delta[start] = 0
+
+        // map vertex
+        val previous: MutableMap<T, T?> = this.vertices.associateWith { null }.toMutableMap()
+
+        while (visited != this.vertices) {
+
+            val current: T = delta
+                .filterNot { it.key in visited }
+                .minBy { it.value }
+                .key
+
+            // node is not connected to start node
+            // -> return as all following nodes are also not connected!
+            if (Int.MAX_VALUE == delta.getValue(current)) return previous.toMap()
+
+            // update previous node map
+            this.edges
+                .getValue(current)
+                .minus(visited)
+                .forEach { neighbor ->
+
+                    val newPath = delta.getValue(current) +
+                            this.weights.getValue(Pair(current, neighbor))
+
+                    if (newPath < delta.getValue(neighbor)) {
+                        delta[neighbor] = newPath
+                        previous[neighbor] = current
+                    }
+
+                }
+
+            visited.add(current) // mark vertex as visited
+        }
+
+        return previous.toMap()
+    }
+
 }
 
 fun <T> shortestPath(shortestPathTree: Map<T, T?>, start: T, end: T): List<T> {
@@ -152,6 +166,5 @@ fun <T> shortestPath(shortestPathTree: Map<T, T?>, start: T, end: T): List<T> {
         if (shortestPathTree[end] == null) return listOf(end)
         return listOf(pathTo(start, shortestPathTree[end]!!), listOf(end)).flatten()
     }
-
     return pathTo(start, end)
 }
